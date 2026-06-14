@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seven Wonders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14100b; --bg2:#0d0a06;
+  --panel:#1f1812; --panel2:#2a2017; --panel3:#352818;
+  --ink:#e9dcc1; --ink-dim:#b6a585; --ink-faint:#80735a;
+  --gold:#cfa450; --gold-bright:#e8c878; --bronze:#8a6d3b;
+  --line:#3a2c1c; --line2:#4d3a22;
+  --ok:#7fae6b; --bad:#c2604f; --warn:#d8a64a;
+  --c-brown:#7c4a2d; --c-grey:#8b929c; --c-blue:#2f6fb0;
+  --c-yellow:#d9a420; --c-red:#b5362c; --c-green:#2e8b57; --c-purple:#7a4ea3;
+  --r:10px; --r-sm:6px;
+  --disp:'Cinzel',Georgia,'Times New Roman',serif;
+  --body:'Spectral',Georgia,'Times New Roman',serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(120% 80% at 50% -10%, #2a1d10 0%, transparent 55%),
+    radial-gradient(80% 60% at 12% 8%, rgba(207,164,80,.10) 0%, transparent 45%),
+    radial-gradient(80% 60% at 88% 6%, rgba(184,90,40,.10) 0%, transparent 45%),
+    var(--bg);
+  color:var(--ink); font-family:var(--body);
+  font-size:16px; line-height:1.45; min-height:100vh;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+#app{max-width:1080px; margin:0 auto; padding:18px 16px 48px; min-height:100vh}
+h1,h2,h3{font-family:var(--disp); font-weight:600; margin:0; letter-spacing:.04em}
+b{color:var(--ink)}
+button{font-family:var(--body); cursor:pointer; color:var(--ink); background:none; border:none}
+button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:focus-visible{
+  outline:2px solid var(--gold-bright); outline-offset:2px;
+}
+.eyebrow{font-family:var(--disp); text-transform:uppercase; letter-spacing:.34em;
+  font-size:11px; color:var(--gold); font-weight:600}
+
+/* ---------------- HOME ---------------- */
+.home{min-height:84vh; display:flex; flex-direction:column; justify-content:center; gap:30px}
+.home-hero{text-align:center; padding-top:6px}
+.home-hero h1{font-size:clamp(46px,12vw,108px); line-height:.86; letter-spacing:.08em;
+  color:var(--ink); text-shadow:0 2px 0 #000, 0 0 38px rgba(207,164,80,.18)}
+.home-hero h1 span{color:var(--gold);
+  background:linear-gradient(180deg,var(--gold-bright),var(--bronze));
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+.home-hero .eyebrow{display:block; margin-bottom:14px}
+.tag-line{max-width:560px; margin:18px auto 0; color:var(--ink-dim);
+  font-size:17px; font-style:italic}
+.home-modes{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+.mode-btn{display:flex; flex-direction:column; gap:8px; text-align:left;
+  padding:20px 18px; border:1px solid var(--line2); border-radius:var(--r);
+  background:linear-gradient(170deg,var(--panel2),var(--panel));
+  transition:transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+  position:relative; overflow:hidden}
+.mode-btn::before{content:""; position:absolute; inset:0 auto 0 0; width:3px;
+  background:linear-gradient(180deg,var(--gold),var(--bronze)); opacity:.5}
+.mode-btn:hover{transform:translateY(-3px); border-color:var(--gold);
+  box-shadow:0 10px 30px rgba(0,0,0,.4), inset 0 0 0 1px rgba(207,164,80,.2)}
+.mb-title{font-family:var(--disp); font-size:19px; font-weight:600; color:var(--ink)}
+.mb-sub{font-size:13px; color:var(--ink-faint); line-height:1.35}
+.home-foot{text-align:center; color:var(--ink-faint); font-size:13px;
+  border-top:1px solid var(--line); padding-top:18px}
+.home-foot b{color:var(--gold)}
+
+/* ---------------- SETUP / LOBBY ENTRY ---------------- */
+.setup{max-width:480px; margin:24px auto 0; display:flex; flex-direction:column; gap:18px}
+.setup h2{font-size:30px; text-align:center}
+.back{align-self:flex-start; color:var(--ink-dim); font-size:14px; padding:4px 2px}
+.back:hover{color:var(--gold)}
+.field{display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:13px 16px; border:1px solid var(--line2); border-radius:var(--r);
+  background:var(--panel)}
+.field>span{font-family:var(--disp); font-size:14px; letter-spacing:.04em}
+.field input[type=text]{flex:1; min-width:0; background:var(--bg2); color:var(--ink);
+  border:1px solid var(--line2); border-radius:var(--r-sm); padding:9px 11px;
+  font-family:var(--body); font-size:15px}
+.stepper{display:flex; align-items:center; gap:4px}
+.stepper button{width:36px; height:36px; border:1px solid var(--line2); border-radius:var(--r-sm);
+  background:var(--panel2); font-size:20px; line-height:1; color:var(--gold)}
+.stepper button:hover{border-color:var(--gold); background:var(--panel3)}
+.stepper b{min-width:34px; text-align:center; font-family:var(--disp); font-size:20px; color:var(--ink)}
+.names{display:flex; flex-direction:column; gap:8px}
+.name-row{display:flex; align-items:center; gap:10px}
+.name-row input{flex:1; background:var(--bg2); color:var(--ink); border:1px solid var(--line2);
+  border-radius:var(--r-sm); padding:9px 11px; font-family:var(--body); font-size:15px}
+.seat-tag{font-family:var(--disp); font-size:11px; letter-spacing:.08em; padding:4px 8px;
+  border-radius:99px; min-width:42px; text-align:center; border:1px solid var(--line2)}
+.seat-tag.you{background:rgba(207,164,80,.16); color:var(--gold-bright); border-color:var(--bronze)}
+.seat-tag.bot{background:var(--panel2); color:var(--ink-faint)}
+.toggle{display:grid; grid-template-columns:auto 1fr; gap:4px 10px; align-items:center;
+  padding:13px 16px; border:1px solid var(--line2); border-radius:var(--r); background:var(--panel);
+  cursor:pointer}
+.toggle input{width:18px; height:18px; accent-color:var(--gold); grid-row:span 2}
+.toggle span{font-family:var(--disp); font-size:14px; letter-spacing:.04em}
+.toggle small{grid-column:2; color:var(--ink-faint); font-size:12px}
+.primary,.secondary{font-family:var(--disp); letter-spacing:.06em; font-size:15px; font-weight:600;
+  padding:14px 18px; border-radius:var(--r); text-align:center; transition:filter .14s, transform .1s}
+.primary{background:linear-gradient(180deg,var(--gold),var(--bronze)); color:#231708;
+  border:1px solid var(--gold-bright); box-shadow:0 6px 18px rgba(207,164,80,.22)}
+.primary:hover{filter:brightness(1.08)} .primary:active{transform:translateY(1px)}
+.secondary{background:var(--panel2); border:1px solid var(--line2); color:var(--ink)}
+.secondary:hover{border-color:var(--gold)}
+.or{text-align:center; color:var(--ink-faint); font-size:12px; letter-spacing:.2em;
+  text-transform:uppercase; position:relative}
+.or::before,.or::after{content:""; position:absolute; top:50%; width:32%; height:1px; background:var(--line2)}
+.or::before{left:0} .or::after{right:0}
+.note{color:var(--ink-faint); font-size:12.5px; text-align:center; line-height:1.5}
+.warn{background:rgba(216,166,74,.1); border:1px solid var(--bronze); border-radius:var(--r);
+  padding:14px 16px; color:var(--ink-dim); font-size:14px}
+
+/* ---------------- LOBBY ---------------- */
+.lobby{max-width:480px; margin:24px auto 0; display:flex; flex-direction:column; gap:16px; text-align:center}
+.lobby .back{align-self:flex-start}
+.roomcode{font-family:var(--disp); font-size:54px; letter-spacing:.22em; font-weight:700;
+  color:var(--gold-bright); text-shadow:0 0 30px rgba(207,164,80,.3)}
+.lobby-sub{color:var(--ink-dim); font-style:italic}
+.seats{display:flex; flex-wrap:wrap; gap:8px; justify-content:center}
+.seat-chip{padding:8px 14px; border-radius:99px; border:1px solid var(--line2);
+  background:var(--panel2); font-size:14px; color:var(--ink-dim)}
+.seat-chip.me{border-color:var(--gold); color:var(--gold-bright); background:rgba(207,164,80,.12)}
+.dot-wait{display:flex; align-items:center; gap:8px; justify-content:center; color:var(--ink-faint);
+  font-size:13px; text-transform:uppercase; letter-spacing:.16em}
+.dot{width:8px; height:8px; border-radius:99px; background:var(--ok); display:inline-block;
+  animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3} 50%{opacity:1}}
+
+/* ---------------- GAME: TOP BAR ---------------- */
+.game{display:flex; flex-direction:column; gap:14px}
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  padding:10px 14px; border:1px solid var(--line2); border-radius:var(--r);
+  background:linear-gradient(180deg,var(--panel2),var(--panel))}
+.age-track{display:flex; gap:6px}
+.age-pip{font-family:var(--disp); font-weight:700; font-size:14px; width:34px; height:34px;
+  display:grid; place-items:center; border-radius:8px; border:1px solid var(--line2);
+  color:var(--ink-faint); background:var(--bg2)}
+.age-pip.done{color:var(--bronze); border-color:var(--bronze)}
+.age-pip.on{color:#231708; background:linear-gradient(180deg,var(--gold-bright),var(--bronze));
+  border-color:var(--gold-bright); box-shadow:0 0 16px rgba(207,164,80,.4)}
+.turn-info{font-family:var(--disp); font-size:13px; letter-spacing:.04em; color:var(--ink-dim);
+  flex:1; text-align:center; min-width:160px}
+.top-right{display:flex; align-items:center; gap:8px}
+.coinbox{font-family:var(--disp); font-weight:600; color:var(--gold-bright);
+  background:rgba(207,164,80,.12); border:1px solid var(--bronze); border-radius:99px;
+  padding:6px 12px; font-size:14px}
+.ghost{border:1px solid var(--line2); border-radius:var(--r-sm); padding:7px 11px;
+  font-size:13px; color:var(--ink-dim); background:var(--panel2)}
+.ghost:hover{border-color:var(--gold); color:var(--gold)}
+
+/* ---------------- OPPONENT CITIES ---------------- */
+.opponents{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px}
+.city{border:1px solid var(--line2); border-radius:var(--r); background:var(--panel);
+  padding:11px 12px; cursor:pointer; transition:border-color .14s, transform .1s; display:flex;
+  flex-direction:column; gap:7px}
+.city:hover{border-color:var(--gold); transform:translateY(-2px)}
+.city.nb-left{box-shadow:inset 3px 0 0 var(--bronze)}
+.city.nb-right{box-shadow:inset -3px 0 0 var(--bronze)}
+.city-head{display:flex; align-items:baseline; justify-content:space-between; gap:6px}
+.city-name{font-family:var(--disp); font-size:15px; font-weight:600; color:var(--ink);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.nb-tag{font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:var(--bronze);
+  border:1px solid var(--bronze); border-radius:99px; padding:1px 6px; flex:none}
+.city-wonder{font-size:12px; color:var(--ink-dim); display:flex; align-items:center; gap:6px}
+.wpips{display:inline-flex; gap:3px}
+.wpips i{width:8px; height:8px; border-radius:2px; background:var(--line2);
+  border:1px solid var(--line2); display:inline-block}
+.wpips i.f{background:linear-gradient(180deg,var(--gold-bright),var(--bronze)); border-color:var(--gold)}
+.city-row{display:flex; flex-wrap:wrap; gap:4px}
+.cdot{font-family:var(--disp); font-size:12px; font-weight:600; min-width:20px; height:20px; padding:0 5px;
+  display:inline-grid; place-items:center; border-radius:5px; color:#fff;
+  background:var(--col,#555); box-shadow:inset 0 -2px 4px rgba(0,0,0,.35)}
+.cdot.empty{opacity:.18; min-width:14px; width:14px; padding:0}
+.cdot[data-col=brown]{--col:var(--c-brown)} .cdot[data-col=grey]{--col:var(--c-grey); color:#1a1a1a}
+.cdot[data-col=blue]{--col:var(--c-blue)} .cdot[data-col=yellow]{--col:var(--c-yellow); color:#241b06}
+.cdot[data-col=green]{--col:var(--c-green)} .cdot[data-col=red]{--col:var(--c-red)}
+.cdot[data-col=purple]{--col:var(--c-purple)}
+.city-stats{display:flex; flex-wrap:wrap; gap:9px; font-size:12.5px; color:var(--ink-dim);
+  border-top:1px solid var(--line); padding-top:6px}
+.city-stats .pos{color:var(--ok)} .city-stats .neg{color:var(--bad)}
+.s-mil{color:var(--c-red)} .s-sci{color:var(--c-green)}
+
+/* ---------------- MY AREA: WONDER (SIGNATURE) ---------------- */
+.myarea{display:grid; grid-template-columns:minmax(280px,420px) 1fr; gap:14px; align-items:start}
+.wonder{border-radius:var(--r); padding:16px 16px 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), transparent 40%),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(0,0,0,.08) 18px 19px),
+    linear-gradient(160deg,#332a1f,#241d14);
+  border:1px solid var(--line2); position:relative;
+  box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05)}
+.wonder::after{content:""; position:absolute; inset:6px; border:1px solid rgba(207,164,80,.18);
+  border-radius:6px; pointer-events:none}
+.wonder-name{font-family:var(--disp); font-size:21px; font-weight:700; color:var(--gold-bright);
+  letter-spacing:.05em; text-shadow:0 1px 0 #000}
+.wonder-sub{font-size:11.5px; color:var(--ink-faint); margin:3px 0 12px; line-height:1.4}
+.stages{display:flex; gap:8px}
+.stage{flex:1; min-height:96px; border-radius:var(--r-sm); padding:8px 6px;
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:6px;
+  background:linear-gradient(180deg, rgba(0,0,0,.3), rgba(0,0,0,.12));
+  border:1px solid var(--line2); position:relative; text-align:center}
+.stage::before{content:""; position:absolute; inset:0; border-radius:var(--r-sm);
+  box-shadow:inset 0 0 14px rgba(0,0,0,.5)}
+.stage.built{background:linear-gradient(180deg, rgba(207,164,80,.32), rgba(138,109,59,.18));
+  border-color:var(--gold)}
+.stage.built::before{box-shadow:inset 0 0 18px rgba(207,164,80,.4)}
+.stage-cost{display:flex; flex-wrap:wrap; gap:3px; justify-content:center; min-height:20px}
+.stage-reward{font-family:var(--disp); font-weight:700; font-size:14px; color:var(--gold-bright);
+  text-shadow:0 1px 0 #000}
+.stage.built .stage-reward{color:#fff}
+
+/* ---------------- TABLEAU ---------------- */
+.tableau{display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; min-height:120px;
+  padding:6px; border:1px dashed var(--line2); border-radius:var(--r); background:rgba(0,0,0,.14)}
+.tcol{position:relative; width:100px; flex:none}
+.tcard{position:absolute; left:0; right:0; height:42px; border-radius:6px; padding:5px 7px;
+  border:1px solid rgba(0,0,0,.35); border-left:4px solid rgba(255,255,255,.4);
+  box-shadow:0 3px 8px rgba(0,0,0,.4); overflow:hidden; background:var(--cardbg,#444);
+  color:#fff}
+.tc-name{display:block; font-family:var(--disp); font-size:10px; font-weight:600; line-height:1.1;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 1px rgba(0,0,0,.5)}
+.tc-eff{display:flex; flex-wrap:wrap; gap:3px; font-size:10px; margin-top:2px}
+.empty-note{color:var(--ink-faint); font-style:italic; font-size:13px; padding:16px; margin:auto}
+
+/* ---------------- HAND ---------------- */
+.handwrap{display:flex; flex-direction:column; gap:8px}
+.hand-title{font-family:var(--disp); font-size:14px; letter-spacing:.06em; color:var(--gold);
+  text-transform:uppercase}
+.hand{display:flex; gap:10px; overflow-x:auto; padding:6px 2px 12px; scroll-snap-type:x proximity}
+.handcard{flex:0 0 150px; scroll-snap-align:start; border-radius:var(--r); padding:11px 12px;
+  background:linear-gradient(178deg,var(--panel2),var(--panel)); border:1px solid var(--line2);
+  border-top:4px solid var(--cardbg,#555); cursor:pointer; min-height:140px;
+  display:flex; flex-direction:column; gap:7px; transition:transform .12s, border-color .12s, box-shadow .12s}
+.handcard:hover{transform:translateY(-5px); box-shadow:0 12px 26px rgba(0,0,0,.45)}
+.handcard.static{cursor:default} .handcard.static:hover{transform:none; box-shadow:none}
+.hc-head{display:flex} .hc-name{font-family:var(--disp); font-size:14px; font-weight:600; line-height:1.15; color:var(--ink)}
+.hc-cost{display:flex; flex-wrap:wrap; gap:4px; min-height:22px}
+.hc-eff{display:flex; flex-wrap:wrap; gap:4px; align-items:center; flex:1; align-content:flex-start; font-size:12px; color:var(--ink-dim)}
+.hc-chain{font-size:10.5px; color:var(--ink-faint); font-style:italic}
+.hc-flags{display:flex; gap:6px; border-top:1px solid var(--line); padding-top:6px; font-style:normal}
+.hc-flags i{font-style:normal; font-size:11px; letter-spacing:.04em; padding:2px 6px; border-radius:99px}
+.hc-flags i.ok{color:var(--ok); border:1px solid rgba(127,174,107,.4); background:rgba(127,174,107,.1)}
+.hc-flags i.no{color:var(--ink-faint); border:1px solid var(--line2)}
+.locked-note{color:var(--ink-dim); font-style:italic; padding:18px 4px}
+
+/* card color mapping (hand + tableau + sheet) */
+.c-brown{--cardbg:var(--c-brown)} .c-grey{--cardbg:var(--c-grey)} .c-blue{--cardbg:var(--c-blue)}
+.c-yellow{--cardbg:var(--c-yellow)} .c-red{--cardbg:var(--c-red)} .c-green{--cardbg:var(--c-green)}
+.c-purple{--cardbg:var(--c-purple)}
+
+/* ---------------- INLINE ICON CHIPS ---------------- */
+.res{display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 4px;
+  border-radius:5px; font-size:10.5px; font-weight:600; font-family:var(--disp);
+  color:#fff; background:var(--rc,#555); box-shadow:inset 0 -2px 3px rgba(0,0,0,.35); line-height:1}
+.res sub{font-size:8px; margin-left:1px}
+.coin{display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 5px;
+  border-radius:99px; font-family:var(--disp); font-size:11px; font-weight:700; color:#241b06;
+  background:radial-gradient(circle at 35% 30%,var(--gold-bright),var(--bronze)); line-height:1}
+.free{font-style:italic; color:var(--ink-faint); font-size:12px}
+.vp{color:var(--c-blue); font-weight:600; font-family:var(--disp)}
+.mil{color:var(--c-red); letter-spacing:-1px}
+.sci{color:var(--c-green); font-size:15px}
+.choice{display:inline-flex; align-items:center; gap:1px}
+.tag{font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint);
+  border:1px solid var(--line2); border-radius:99px; padding:1px 6px}
+
+/* ---------------- ONLINE STATUS ---------------- */
+.online-status{text-align:center; color:var(--ink-dim); font-size:13px; font-style:italic;
+  border-top:1px solid var(--line); padding-top:10px}
+.online-status b{color:var(--gold-bright); font-style:normal}
+
+/* ---------------- PANEL / SHEETS ---------------- */
+.panel-host{position:fixed; inset:0; z-index:40; display:none}
+.panel-host.open{display:block}
+.panel-backdrop{position:absolute; inset:0; background:rgba(8,5,2,.7); backdrop-filter:blur(2px);
+  animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+  width:min(560px,100%); background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line2); border-bottom:none; border-radius:16px 16px 0 0;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px;
+  box-shadow:0 -16px 50px rgba(0,0,0,.6); animation:rise .22s cubic-bezier(.2,.8,.2,1); max-height:88vh; overflow:auto}
+.sheet.wide{width:min(720px,100%)}
+@keyframes rise{from{transform:translate(-50%,16px); opacity:.4}to{transform:translate(-50%,0); opacity:1}}
+@media(min-width:680px){
+  .sheet{bottom:auto; top:50%; transform:translate(-50%,-50%); border-radius:16px; border-bottom:1px solid var(--line2)}
+  @keyframes rise{from{transform:translate(-50%,calc(-50% + 12px)); opacity:.4}to{transform:translate(-50%,-50%); opacity:1}}
+}
+.sheet-title{font-family:var(--disp); font-size:18px; font-weight:600; color:var(--gold-bright); letter-spacing:.04em}
+.sheet-card{border-radius:var(--r); padding:12px 14px; border-left:5px solid var(--cardbg,#555);
+  background:rgba(0,0,0,.22)}
+.sc-name{font-family:var(--disp); font-size:17px; font-weight:600; color:var(--ink)}
+.sc-eff{display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; font-size:13px; color:var(--ink-dim); align-items:center}
+.sheet-acts{display:flex; flex-direction:column; gap:8px}
+.act{text-align:left; display:flex; flex-direction:column; gap:2px; padding:12px 14px;
+  border:1px solid var(--line2); border-radius:var(--r); background:var(--panel2); transition:border-color .12s, background .12s}
+.act:hover:not(.disabled){border-color:var(--gold); background:var(--panel3)}
+.act.disabled{opacity:.45; cursor:not-allowed}
+.act.k-build{border-left:4px solid var(--ok)} .act.k-wonder{border-left:4px solid var(--gold)}
+.act.k-discard{border-left:4px solid var(--ink-faint)}
+.act-label{font-family:var(--disp); font-size:14px; font-weight:600; color:var(--ink)}
+.act-sub{font-size:12px; color:var(--ink-faint)}
+.sheet-cancel{margin-top:2px; padding:11px; border:1px solid var(--line2); border-radius:var(--r);
+  color:var(--ink-dim); background:transparent; font-family:var(--disp); font-size:13px; letter-spacing:.06em}
+.sheet-cancel:hover{border-color:var(--gold); color:var(--gold)}
+.sheet .wonder{margin-top:4px} .sheet .tableau{margin-top:4px}
+.rules p{margin:0 0 10px; font-size:14px; color:var(--ink-dim); line-height:1.6}
+.rules b{color:var(--gold-bright)}
+.logbox{display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--ink-dim);
+  max-height:50vh; overflow:auto}
+.logbox div{padding:5px 8px; border-left:2px solid var(--line2); background:rgba(0,0,0,.18); border-radius:0 6px 6px 0}
+
+/* ---------------- PASS INTERSTITIAL ---------------- */
+.passcard{min-height:80vh; display:grid; place-items:center; text-align:center}
+.pass-inner{display:flex; flex-direction:column; gap:14px; align-items:center; max-width:380px}
+.pass-inner h2{font-size:38px; color:var(--gold-bright)}
+.pass-inner p{color:var(--ink-dim); font-style:italic; margin:0}
+.pass-inner .primary{margin-top:10px; width:100%}
+
+/* ---------------- SCORE ---------------- */
+.scorescreen{max-width:760px; margin:18px auto 0; display:flex; flex-direction:column; gap:18px; text-align:center}
+.scorescreen .win{font-size:34px; color:var(--gold-bright); text-shadow:0 0 30px rgba(207,164,80,.3)}
+.scoretable{width:100%; border-collapse:collapse; font-size:13px; overflow:hidden;
+  border:1px solid var(--line2); border-radius:var(--r)}
+.scoretable th,.scoretable td{padding:9px 7px; text-align:center; border-bottom:1px solid var(--line)}
+.scoretable th{font-family:var(--disp); font-size:11px; letter-spacing:.04em; color:var(--gold);
+  text-transform:uppercase; background:var(--panel2)}
+.scoretable td.nm{font-family:var(--disp); color:var(--ink); text-align:left; white-space:nowrap}
+.scoretable td.tot{font-family:var(--disp); font-weight:700; color:var(--gold-bright); font-size:15px}
+.scoretable tr.first td{background:rgba(207,164,80,.1)}
+.scoretable tbody tr:last-child td{border-bottom:none}
+.scorescreen .primary{align-self:center; min-width:200px}
+
+/* ---------------- TOAST ---------------- */
+#toast{position:fixed; left:50%; bottom:26px; transform:translate(-50%,20px);
+  background:var(--panel3); color:var(--ink); border:1px solid var(--gold); border-radius:99px;
+  padding:11px 20px; font-size:14px; z-index:60; opacity:0; pointer-events:none;
+  transition:opacity .2s, transform .2s; box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast.show{opacity:1; transform:translate(-50%,0)}
+
+/* ---------------- RESPONSIVE ---------------- */
+@media(max-width:680px){
+  #app{padding:14px 12px 40px}
+  .home-modes{grid-template-columns:1fr}
+  .myarea{grid-template-columns:1fr}
+  .opponents{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .topbar{gap:8px} .turn-info{order:3; flex-basis:100%; text-align:left}
+  .home-hero h1{letter-spacing:.04em}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================================================
+   SEVEN WONDERS — Core Engine (pure, DOM-free, testable)
+   Original implementation of public-domain game mechanics.
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  const RAW = ['wood', 'stone', 'clay', 'ore'];
+  const MAN = ['glass', 'papyrus', 'loom'];
+  const RES = RAW.concat(MAN);
+  const COLORS = ['brown', 'grey', 'blue', 'yellow', 'red', 'green', 'purple'];
+
+  // ---- helpers ----
+  function emptyRes() { const o = {}; RES.forEach(r => o[r] = 0); return o; }
+  function cloneRes(r) { const o = {}; RES.forEach(k => o[k] = r[k] || 0); return o; }
+  function cost(coins, res) { const c = { coins: coins || 0, res: emptyRes() }; if (res) for (const k in res) c.res[k] = res[k]; return c; }
+
+  /* ----------------------------------------------------------
+     CARD DATABASE
+     Each card: { name, color, age, minP:[counts], cost, produce, choice,
+                  vp, shields, science, coins, chainTo:[], chainFrom:[], effect }
+     produce: fixed {res:n}; choice: array of resource-sets the card can be ONE of.
+     minP: list of player counts at which a COPY of this card enters the deck.
+     ---------------------------------------------------------- */
+  function C(o) { o.cost = o.cost || cost(0); return o; }
+
+  const CARDS = [
+    // ================= AGE I =================
+    // Brown raw
+    C({ name: 'Lumber Yard', color: 'brown', age: 1, minP: [3, 4], produce: { wood: 1 } }),
+    C({ name: 'Stone Pit', color: 'brown', age: 1, minP: [3, 5], produce: { stone: 1 } }),
+    C({ name: 'Clay Pool', color: 'brown', age: 1, minP: [3, 5], produce: { clay: 1 } }),
+    C({ name: 'Ore Vein', color: 'brown', age: 1, minP: [3, 4], produce: { ore: 1 } }),
+    C({ name: 'Tree Farm', color: 'brown', age: 1, minP: [6], cost: cost(1), choice: [{ wood: 1 }, { clay: 1 }] }),
+    C({ name: 'Excavation', color: 'brown', age: 1, minP: [4], cost: cost(1), choice: [{ stone: 1 }, { clay: 1 }] }),
+    C({ name: 'Clay Pit', color: 'brown', age: 1, minP: [3], cost: cost(1), choice: [{ clay: 1 }, { ore: 1 }] }),
+    C({ name: 'Timber Yard', color: 'brown', age: 1, minP: [3], cost: cost(1), choice: [{ stone: 1 }, { wood: 1 }] }),
+    C({ name: 'Forest Cave', color: 'brown', age: 1, minP: [5], cost: cost(1), choice: [{ wood: 1 }, { ore: 1 }] }),
+    C({ name: 'Mine', color: 'brown', age: 1, minP: [6], cost: cost(1), choice: [{ ore: 1 }, { stone: 1 }] }),
+    // Grey manufactured
+    C({ name: 'Loom', color: 'grey', age: 1, minP: [3, 6], produce: { loom: 1 } }),
+    C({ name: 'Glassworks', color: 'grey', age: 1, minP: [3, 6], produce: { glass: 1 } }),
+    C({ name: 'Press', color: 'grey', age: 1, minP: [3, 6], produce: { papyrus: 1 } }),
+    // Blue civilian
+    C({ name: 'Pawnshop', color: 'blue', age: 1, minP: [4, 7], vp: 3 }),
+    C({ name: 'Baths', color: 'blue', age: 1, minP: [3, 7], cost: cost(0, { stone: 1 }), vp: 3, chainTo: ['Aqueduct'] }),
+    C({ name: 'Altar', color: 'blue', age: 1, minP: [3, 5], vp: 2, chainTo: ['Temple'] }),
+    C({ name: 'Theater', color: 'blue', age: 1, minP: [3, 6], vp: 2, chainTo: ['Statue'] }),
+    // Yellow commercial
+    C({ name: 'Tavern', color: 'yellow', age: 1, minP: [4, 5, 7], coins: 5 }),
+    C({ name: 'East Trading Post', color: 'yellow', age: 1, minP: [3, 7], effect: { trade: { side: 'right', kind: 'raw' } }, chainTo: ['Forum'] }),
+    C({ name: 'West Trading Post', color: 'yellow', age: 1, minP: [3, 7], effect: { trade: { side: 'left', kind: 'raw' } }, chainTo: ['Forum'] }),
+    C({ name: 'Marketplace', color: 'yellow', age: 1, minP: [3, 6], effect: { trade: { side: 'both', kind: 'man' } }, chainTo: ['Caravansery'] }),
+    // Red military
+    C({ name: 'Stockade', color: 'red', age: 1, minP: [3, 7], cost: cost(0, { wood: 1 }), shields: 1 }),
+    C({ name: 'Barracks', color: 'red', age: 1, minP: [3, 5], cost: cost(0, { ore: 1 }), shields: 1 }),
+    C({ name: 'Guard Tower', color: 'red', age: 1, minP: [3, 4], cost: cost(0, { clay: 1 }), shields: 1 }),
+    // Green science
+    C({ name: 'Apothecary', color: 'green', age: 1, minP: [3, 5], cost: cost(0, { loom: 1 }), science: 'compass', chainTo: ['Stables', 'Dispensary'] }),
+    C({ name: 'Workshop', color: 'green', age: 1, minP: [3, 7], cost: cost(0, { glass: 1 }), science: 'gear', chainTo: ['Archery Range', 'Laboratory'] }),
+    C({ name: 'Scriptorium', color: 'green', age: 1, minP: [3, 4], cost: cost(0, { papyrus: 1 }), science: 'tablet', chainTo: ['Courthouse', 'Library'] }),
+
+    // ================= AGE II =================
+    // Brown
+    C({ name: 'Sawmill', color: 'brown', age: 2, minP: [3, 4], cost: cost(1), produce: { wood: 2 } }),
+    C({ name: 'Quarry', color: 'brown', age: 2, minP: [3, 4], cost: cost(1), produce: { stone: 2 } }),
+    C({ name: 'Brickyard', color: 'brown', age: 2, minP: [3, 4], cost: cost(1), produce: { clay: 2 } }),
+    C({ name: 'Foundry', color: 'brown', age: 2, minP: [3, 4], cost: cost(1), produce: { ore: 2 } }),
+    // Grey
+    C({ name: 'Loom', color: 'grey', age: 2, minP: [3, 5], produce: { loom: 1 } }),
+    C({ name: 'Glassworks', color: 'grey', age: 2, minP: [3, 5], produce: { glass: 1 } }),
+    C({ name: 'Press', color: 'grey', age: 2, minP: [3, 5], produce: { papyrus: 1 } }),
+    // Blue
+    C({ name: 'Aqueduct', color: 'blue', age: 2, minP: [3, 7], cost: cost(0, { stone: 3 }), vp: 5, chainFrom: ['Baths'] }),
+    C({ name: 'Temple', color: 'blue', age: 2, minP: [3, 6], cost: cost(0, { wood: 1, clay: 1, glass: 1 }), vp: 3, chainFrom: ['Altar'], chainTo: ['Pantheon'] }),
+    C({ name: 'Statue', color: 'blue', age: 2, minP: [3, 7], cost: cost(0, { ore: 2, wood: 1 }), vp: 4, chainFrom: ['Theater'], chainTo: ['Gardens'] }),
+    C({ name: 'Courthouse', color: 'blue', age: 2, minP: [3, 5], cost: cost(0, { clay: 2, loom: 1 }), vp: 4, chainFrom: ['Scriptorium'] }),
+    // Yellow
+    C({ name: 'Forum', color: 'yellow', age: 2, minP: [3, 6, 7], cost: cost(0, { clay: 2 }), choice: [{ glass: 1 }, { papyrus: 1 }, { loom: 1 }], chainFrom: ['East Trading Post', 'West Trading Post'], chainTo: ['Haven'] }),
+    C({ name: 'Caravansery', color: 'yellow', age: 2, minP: [3, 5, 6], cost: cost(0, { wood: 2 }), choice: [{ wood: 1 }, { stone: 1 }, { ore: 1 }, { clay: 1 }], chainFrom: ['Marketplace'], chainTo: ['Lighthouse'] }),
+    C({ name: 'Vineyard', color: 'yellow', age: 2, minP: [3, 6], effect: { coinPer: { color: 'brown', scope: 'all', coins: 1 } } }),
+    C({ name: 'Bazar', color: 'yellow', age: 2, minP: [4, 7], effect: { coinPer: { color: 'grey', scope: 'all', coins: 2 } } }),
+    // Red
+    C({ name: 'Walls', color: 'red', age: 2, minP: [3, 7], cost: cost(0, { stone: 3 }), shields: 2, chainTo: ['Fortifications'] }),
+    C({ name: 'Training Ground', color: 'red', age: 2, minP: [4, 6, 7], cost: cost(0, { ore: 1, wood: 2 }), shields: 2, chainTo: ['Circus'] }),
+    C({ name: 'Stables', color: 'red', age: 2, minP: [3, 5], cost: cost(0, { ore: 1, clay: 1, wood: 1 }), shields: 2, chainFrom: ['Apothecary'] }),
+    C({ name: 'Archery Range', color: 'red', age: 2, minP: [3, 6], cost: cost(0, { wood: 2, ore: 1 }), shields: 2, chainFrom: ['Workshop'] }),
+    // Green
+    C({ name: 'Dispensary', color: 'green', age: 2, minP: [3, 4], cost: cost(0, { ore: 2, glass: 1 }), science: 'compass', chainFrom: ['Apothecary'], chainTo: ['Lodge', 'Arena'] }),
+    C({ name: 'Laboratory', color: 'green', age: 2, minP: [3, 5], cost: cost(0, { clay: 2, papyrus: 1 }), science: 'gear', chainFrom: ['Workshop'], chainTo: ['Siege Workshop', 'Observatory'] }),
+    C({ name: 'Library', color: 'green', age: 2, minP: [3, 6], cost: cost(0, { stone: 2, loom: 1 }), science: 'tablet', chainFrom: ['Scriptorium'], chainTo: ['Senate', 'University'] }),
+    C({ name: 'School', color: 'green', age: 2, minP: [3, 7], cost: cost(0, { wood: 1, papyrus: 1 }), science: 'tablet', chainTo: ['Academy', 'Study'] }),
+
+    // ================= AGE III =================
+    // Blue
+    C({ name: 'Pantheon', color: 'blue', age: 3, minP: [3, 6], cost: cost(0, { clay: 2, ore: 1, glass: 1, papyrus: 1, loom: 1 }), vp: 7, chainFrom: ['Temple'] }),
+    C({ name: 'Gardens', color: 'blue', age: 3, minP: [3, 4], cost: cost(0, { clay: 2, wood: 1 }), vp: 5, chainFrom: ['Statue'] }),
+    C({ name: 'Town Hall', color: 'blue', age: 3, minP: [3, 5, 6], cost: cost(0, { stone: 2, ore: 1, glass: 1 }), vp: 6 }),
+    C({ name: 'Palace', color: 'blue', age: 3, minP: [3, 7], cost: cost(0, { wood: 1, stone: 1, ore: 1, clay: 1, glass: 1, papyrus: 1, loom: 1 }), vp: 8 }),
+    C({ name: 'Senate', color: 'blue', age: 3, minP: [3, 5], cost: cost(0, { wood: 2, stone: 1, ore: 1 }), vp: 6, chainFrom: ['Library'] }),
+    // Yellow
+    C({ name: 'Haven', color: 'yellow', age: 3, minP: [3, 4], cost: cost(0, { loom: 1, ore: 1, wood: 1 }), effect: { coinVpPer: { color: 'brown', scope: 'self', coins: 1, vp: 1 } }, chainFrom: ['Forum'] }),
+    C({ name: 'Lighthouse', color: 'yellow', age: 3, minP: [3, 6], cost: cost(0, { stone: 1, glass: 1 }), effect: { coinVpPer: { color: 'yellow', scope: 'self', coins: 1, vp: 1 } }, chainFrom: ['Caravansery'] }),
+    C({ name: 'Chamber of Commerce', color: 'yellow', age: 3, minP: [4, 6], cost: cost(0, { clay: 2, papyrus: 1 }), effect: { coinVpPer: { color: 'grey', scope: 'self', coins: 2, vp: 2 } } }),
+    C({ name: 'Arena', color: 'yellow', age: 3, minP: [3, 5, 7], cost: cost(0, { stone: 2, ore: 1 }), effect: { coinVpPerStage: { coins: 3, vp: 1 } }, chainFrom: ['Dispensary'] }),
+    // Red
+    C({ name: 'Fortifications', color: 'red', age: 3, minP: [3, 7], cost: cost(0, { ore: 3, stone: 1 }), shields: 3, chainFrom: ['Walls'] }),
+    C({ name: 'Circus', color: 'red', age: 3, minP: [4, 5, 6], cost: cost(0, { stone: 3, ore: 2 }), shields: 3, chainFrom: ['Training Ground'] }),
+    C({ name: 'Arsenal', color: 'red', age: 3, minP: [3, 4, 7], cost: cost(0, { wood: 3, ore: 2, loom: 1 }), shields: 3 }),
+    C({ name: 'Siege Workshop', color: 'red', age: 3, minP: [3, 5], cost: cost(0, { clay: 3, wood: 1 }), shields: 3, chainFrom: ['Laboratory'] }),
+    // Green
+    C({ name: 'Lodge', color: 'green', age: 3, minP: [3, 6], cost: cost(0, { clay: 2, loom: 1, papyrus: 1 }), science: 'compass', chainFrom: ['Dispensary'] }),
+    C({ name: 'Observatory', color: 'green', age: 3, minP: [3, 7], cost: cost(0, { ore: 2, glass: 1, loom: 1 }), science: 'gear', chainFrom: ['Laboratory'] }),
+    C({ name: 'University', color: 'green', age: 3, minP: [3, 4], cost: cost(0, { wood: 2, papyrus: 1, glass: 1 }), science: 'tablet', chainFrom: ['Library'] }),
+    C({ name: 'Academy', color: 'green', age: 3, minP: [3, 7], cost: cost(0, { stone: 3, glass: 1 }), science: 'compass', chainFrom: ['School'] }),
+    C({ name: 'Study', color: 'green', age: 3, minP: [3, 5], cost: cost(0, { wood: 1, papyrus: 1, loom: 1 }), science: 'gear', chainFrom: ['School'] }),
+
+    // Purple guilds (count depends on players; we tag age:3 color:purple)
+    C({ name: 'Workers Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { ore: 2, clay: 1, stone: 1, wood: 1 }), effect: { vpPer: { color: 'brown', scope: 'neighbors', vp: 1 } } }),
+    C({ name: 'Craftsmens Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { ore: 2, stone: 2 }), effect: { vpPer: { color: 'grey', scope: 'neighbors', vp: 2 } } }),
+    C({ name: 'Magistrates Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { wood: 3, stone: 1, loom: 1 }), effect: { vpPer: { color: 'blue', scope: 'neighbors', vp: 1 } } }),
+    C({ name: 'Traders Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { loom: 1, papyrus: 1, glass: 1 }), effect: { vpPer: { color: 'yellow', scope: 'neighbors', vp: 1 } } }),
+    C({ name: 'Philosophers Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { clay: 3, loom: 1, papyrus: 1 }), effect: { vpPer: { color: 'green', scope: 'neighbors', vp: 1 } } }),
+    C({ name: 'Spies Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { clay: 3, glass: 1 }), effect: { vpPer: { color: 'red', scope: 'neighbors', vp: 1 } } }),
+    C({ name: 'Strategists Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { ore: 2, stone: 1, loom: 1 }), effect: { vpPerDefeat: { vp: 1 } } }),
+    C({ name: 'Shipowners Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { wood: 3, glass: 1, papyrus: 1 }), effect: { vpPer: { color: ['brown', 'grey', 'purple'], scope: 'self', vp: 1 } } }),
+    C({ name: 'Scientists Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { wood: 2, ore: 2, papyrus: 1 }), effect: { scienceWild: true } }),
+    C({ name: 'Builders Guild', color: 'purple', age: 3, guild: true, cost: cost(0, { stone: 2, clay: 2, glass: 1 }), effect: { vpPerStage: { scope: 'selfNeighbors', vp: 1 } } }),
+  ];
+
+  /* ----------------------------------------------------------
+     WONDERS (A-side stages). startRes given free each turn.
+     stages: [{cost:{res}, effect:{...}}]
+     ---------------------------------------------------------- */
+  const WONDERS = [
+    {
+      name: 'The Colossus of Rhodes', short: 'Rhodes', start: 'ore',
+      stages: [
+        { cost: { wood: 2 }, effect: { vp: 3 } },
+        { cost: { clay: 3 }, effect: { shields: 2 } },
+        { cost: { ore: 4 }, effect: { vp: 7 } },
+      ],
+    },
+    {
+      name: 'The Lighthouse of Alexandria', short: 'Alexandria', start: 'glass',
+      stages: [
+        { cost: { stone: 2 }, effect: { vp: 3 } },
+        { cost: { ore: 2 }, effect: { produceChoice: RAW } },
+        { cost: { glass: 2 }, effect: { vp: 7 } },
+      ],
+    },
+    {
+      name: 'The Temple of Artemis at Ephesus', short: 'Ephesus', start: 'papyrus',
+      stages: [
+        { cost: { stone: 2 }, effect: { vp: 3 } },
+        { cost: { wood: 2 }, effect: { coins: 9 } },
+        { cost: { papyrus: 2 }, effect: { vp: 7 } },
+      ],
+    },
+    {
+      name: 'The Hanging Gardens of Babylon', short: 'Babylon', start: 'clay',
+      stages: [
+        { cost: { clay: 2 }, effect: { vp: 3 } },
+        { cost: { wood: 3 }, effect: { scienceWild: true } },
+        { cost: { clay: 4 }, effect: { vp: 7 } },
+      ],
+    },
+    {
+      name: 'The Statue of Zeus at Olympia', short: 'Olympia', start: 'wood',
+      stages: [
+        { cost: { wood: 2 }, effect: { vp: 3 } },
+        { cost: { stone: 2 }, effect: { freeBuildPerAge: true } },
+        { cost: { ore: 2 }, effect: { vp: 7 } },
+      ],
+    },
+    {
+      name: 'The Mausoleum at Halicarnassus', short: 'Halicarnassus', start: 'loom',
+      stages: [
+        { cost: { clay: 2 }, effect: { vp: 3 } },
+        { cost: { ore: 3 }, effect: { vp: 2 } },
+        { cost: { loom: 2 }, effect: { vp: 7 } },
+      ],
+    },
+    {
+      name: 'The Great Pyramids of Giza', short: 'Giza', start: 'stone',
+      stages: [
+        { cost: { stone: 2 }, effect: { vp: 3 } },
+        { cost: { wood: 3 }, effect: { vp: 5 } },
+        { cost: { stone: 4 }, effect: { vp: 7 } },
+      ],
+    },
+  ];
+
+  /* ----------------------------------------------------------
+     LEADERS EXPANSION — drafted, cost coins, varied bonuses.
+     ---------------------------------------------------------- */
+  const LEADERS = [
+    { name: 'Amytis', leader: true, cost: cost(4), effect: { vpPerStage: { scope: 'self', vp: 2 } }, desc: '2 VP per Wonder stage you built.' },
+    { name: 'Midas', leader: true, cost: cost(3), effect: { vpPerCoins: 3 }, desc: '1 VP per 3 coins at game end (extra).' },
+    { name: 'Vitruvius', leader: true, cost: cost(1), effect: { wonderDiscount: true }, desc: 'Wonder stages cost 1 fewer resource of each type.' },
+    { name: 'Hammurabi', leader: true, cost: cost(2), effect: { scienceWild: true }, desc: 'Counts as any one science symbol.' },
+    { name: 'Caesar', leader: true, cost: cost(5), effect: { shields: 2 }, desc: 'Provides 2 shields immediately.' },
+    { name: 'Hannibal', leader: true, cost: cost(2), effect: { shields: 1 }, desc: 'Provides 1 shield.' },
+    { name: 'Solomon', leader: true, cost: cost(3), effect: { freeBuildPerAge: true }, desc: 'Build one card free from your hand each age.' },
+    { name: 'Croesus', leader: true, cost: cost(0), effect: { coins: 6 }, desc: 'Gain 6 coins now.' },
+    { name: 'Plato', leader: true, cost: cost(4), effect: { vpScienceSet: 7 }, desc: '+7 VP per complete science set (extra).' },
+    { name: 'Aristotle', leader: true, cost: cost(3), effect: { vpScienceSet: 3 }, desc: '+3 VP per science set.' },
+    { name: 'Pericles', leader: true, cost: cost(6), effect: { vp: 2, vpPerColor: { color: 'red', scope: 'self', vp: 0 } }, desc: '2 VP; encourages military builds.' },
+    { name: 'Pythagoras', leader: true, cost: cost(2), effect: { scienceWild: true }, desc: 'Counts as any one science symbol.' },
+    { name: 'Leonidas', leader: true, cost: cost(2), effect: { shields: 1 }, desc: 'Provides 1 shield, cheaply.' },
+    { name: 'Nefertiti', leader: true, cost: cost(3), effect: { vp: 4 }, desc: '4 VP.' },
+    { name: 'Phidias', leader: true, cost: cost(3), effect: { vpPerStage: { scope: 'self', vp: 1 }, vp: 2 }, desc: '2 VP + 1 per Wonder stage.' },
+    { name: 'Euclid', leader: true, cost: cost(5), effect: { scienceWild: true, vp: 1 }, desc: 'Wild science symbol + 1 VP.' },
+    { name: 'Archimedes', leader: true, cost: cost(4), effect: { science: 'gear' }, desc: 'Provides a Gear science symbol.' },
+    { name: 'Imhotep', leader: true, cost: cost(3), effect: { wonderDiscount: true }, desc: 'Wonder stages cost 1 fewer resource of each type.' },
+  ];
+
+  // ---- deck construction ----
+  function buildDeck(age, nPlayers) {
+    const deck = [];
+    CARDS.filter(c => c.age === age && c.color !== 'purple').forEach(c => {
+      c.minP.forEach(threshold => { if (nPlayers >= threshold) deck.push(instCard(c)); });
+    });
+    if (age === 3) {
+      // add (nPlayers + 2) random guilds
+      const guilds = CARDS.filter(c => c.guild).slice();
+      shuffle(guilds);
+      const nG = nPlayers + 2;
+      for (let i = 0; i < nG && i < guilds.length; i++) deck.push(instCard(guilds[i]));
+    }
+    shuffle(deck);
+    return deck;
+  }
+  let _uid = 1;
+  function instCard(proto) {
+    const c = Object.assign({}, proto);
+    c.cost = { coins: proto.cost.coins, res: cloneRes(proto.cost.res) };
+    c.uid = 'c' + (_uid++);
+    return c;
+  }
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  /* ----------------------------------------------------------
+     PRODUCTION model for a player.
+     Returns { fixed:{res:n}, choices:[ [res,res], ... ] } where choices
+     are sets from which exactly one resource may be drawn.
+     Includes wonder start resource, built brown/grey/yellow-choice cards,
+     played leaders, and wonder produceChoice stages.
+     ---------------------------------------------------------- */
+  function production(player) {
+    const fixed = emptyRes();
+    const choices = [];
+    fixed[player.wonder.start] += 1;
+    (player.built || []).forEach(card => {
+      if (card.produce) for (const r in card.produce) fixed[r] += card.produce[r];
+      if (card.choice) choices.push(card.choice.map(set => Object.keys(set)[0]));
+    });
+    (player.stagesBuilt || []).forEach(si => {
+      const eff = player.wonder.stages[si].effect;
+      if (eff.produceChoice) choices.push(eff.produceChoice.slice());
+    });
+    return { fixed, choices };
+  }
+
+  // commerce-able production: own choices the player can sell are NOT modeled
+  // for trade (you can only trade tradeable resources you produce). For our
+  // solver, neighbor "available" production = fixed + their card choices.
+
+  /* ----------------------------------------------------------
+     PAYMENT SOLVER
+     Can `player` afford `need` (resource map) given own production and
+     neighbors' tradeable production? Returns { ok, coinsToNeighbors }
+     minimizing coins spent on trade. Manufactured/raw trade discounts apply.
+     ---------------------------------------------------------- */
+  function tradeRate(player, side, resource) {
+    const man = MAN.indexOf(resource) >= 0;
+    let rate = 2;
+    (player.built || []).forEach(c => {
+      const t = c.effect && c.effect.trade;
+      if (!t) return;
+      if (man && t.kind === 'man' && (t.side === 'both' || t.side === side)) rate = 1;
+      if (!man && t.kind === 'raw' && (t.side === side)) rate = 1;
+    });
+    // leaders that reduce trade could go here
+    return rate;
+  }
+
+  function neighborAvail(neighbor) {
+    // tradeable: fixed raw+man plus their card choices (choice cards are tradeable
+    // one-at-a-time). Wonder start resource is tradeable too. We return a structure.
+    const p = production(neighbor);
+    return { fixed: cloneRes(p.fixed), choices: p.choices.map(s => s.slice()) };
+  }
+
+  // Try to satisfy `need` from a production set (fixed+choices) consuming as we go.
+  // Returns leftover need (what couldn't be covered) — does not handle cost.
+  // Used for self first (free), then neighbors (costed).
+  function consumeFrom(need, avail, opts) {
+    // avail mutated. opts.onTrade(resource) called when used (for cost calc, neighbor only)
+    // First use fixed.
+    const leftover = cloneRes(need);
+    RES.forEach(r => {
+      const take = Math.min(leftover[r], avail.fixed[r]);
+      if (take > 0) { leftover[r] -= take; avail.fixed[r] -= take; if (opts && opts.onTake) for (let i = 0; i < take; i++) opts.onTake(r); }
+    });
+    // Then resolve choices greedily: assign each choice-set to a still-needed resource.
+    // Use backtracking for correctness with small sizes.
+    const remainingChoices = avail.choices.filter(s => s.length).slice();
+    function backtrack(idx, lo) {
+      if (idx >= remainingChoices.length) return lo;
+      // option A: skip this choice
+      let best = cloneRes(lo);
+      let bestRemain = sumRes(best);
+      const set = remainingChoices[idx];
+      for (const r of set) {
+        if (lo[r] > 0) {
+          const nl = cloneRes(lo); nl[r] -= 1;
+          const res = backtrack(idx + 1, nl);
+          if (sumRes(res) < bestRemain) { best = res; bestRemain = sumRes(res); }
+        }
+      }
+      // also allow skipping (assign to nothing needed)
+      const skip = backtrack(idx + 1, lo);
+      if (sumRes(skip) < bestRemain) { best = skip; bestRemain = sumRes(skip); }
+      return best;
+    }
+    const after = backtrack(0, leftover);
+    // We can't easily track which choice mapped to what for onTake on choices;
+    // for neighbor trade cost we handle choices separately (see payable()).
+    return after;
+  }
+  function sumRes(r) { let s = 0; RES.forEach(k => s += r[k]); return s; }
+
+  /* Full affordability with min trade cost.
+     Strategy: cover with own production (free). For remaining need, search over
+     buying from left/right neighbors at their rates, minimizing coins. We do a
+     bounded search since needs are small. */
+  function payable(player, card, neighbors) {
+    const need = cloneRes(card.cost.res);
+    const coinCost = card.cost.coins || 0;
+    if (player.coins < coinCost) {
+      // still might be ok if coinCost is build coin cost; can't borrow
+      if (coinCost > player.coins) return { ok: false };
+    }
+    // own production (with choices) — enumerate own choice assignments to minimize leftover
+    const ownProd = production(player);
+    const ownAvail = { fixed: cloneRes(ownProd.fixed), choices: ownProd.choices.map(s => s.slice()) };
+    const leftover = bestCover(need, ownAvail);
+    if (sumRes(leftover) === 0) {
+      return { ok: player.coins >= coinCost, coinsToNeighbors: 0, leftCoin: 0, rightCoin: 0 };
+    }
+    // Need to buy `leftover` from neighbors. Build per-resource purchasable units
+    // from each neighbor (fixed + best choice assignment toward leftover).
+    const L = neighbors.left ? buyableUnits(neighbors.left, leftover) : null;
+    const R = neighbors.right ? buyableUnits(neighbors.right, leftover) : null;
+    // For each needed resource unit, choose cheaper neighbor (rate*1). Greedy is
+    // optimal here because each unit is independent and rates are fixed per resource/side.
+    let coins = 0; const split = { left: 0, right: 0 };
+    let feasible = true;
+    RES.forEach(r => {
+      let req = leftover[r];
+      if (req <= 0) return;
+      const opts = [];
+      if (L && L[r] > 0) opts.push({ side: 'left', avail: L[r], rate: tradeRate(player, 'left', r) });
+      if (R && R[r] > 0) opts.push({ side: 'right', avail: R[r], rate: tradeRate(player, 'right', r) });
+      opts.sort((a, b) => a.rate - b.rate);
+      for (const o of opts) {
+        while (req > 0 && o.avail > 0) { coins += o.rate; split[o.side] += o.rate; req--; o.avail--; }
+      }
+      if (req > 0) feasible = false;
+    });
+    if (!feasible) return { ok: false };
+    if (player.coins < coinCost + coins) return { ok: false, needCoins: coinCost + coins };
+    return { ok: true, coinsToNeighbors: coins, totalCoins: coinCost + coins, tradeSplit: split };
+  }
+
+  // best assignment of fixed+choices to cover need; returns leftover need map
+  function bestCover(need, avail) {
+    const leftover = cloneRes(need);
+    RES.forEach(r => { const t = Math.min(leftover[r], avail.fixed[r]); leftover[r] -= t; });
+    const choices = avail.choices.slice();
+    function bt(idx, lo) {
+      if (idx >= choices.length || sumRes(lo) === 0) return lo;
+      let best = bt(idx + 1, lo); // skip
+      let bestS = sumRes(best);
+      for (const r of choices[idx]) {
+        if (lo[r] > 0) { const nl = cloneRes(lo); nl[r]--; const res = bt(idx + 1, nl); if (sumRes(res) < bestS) { best = res; bestS = sumRes(res); } }
+      }
+      return best;
+    }
+    return bt(0, leftover);
+  }
+
+  // how many of each needed resource a neighbor can sell (fixed + choices toward need)
+  function buyableUnits(neighbor, need) {
+    const a = neighborAvail(neighbor);
+    const out = emptyRes();
+    RES.forEach(r => out[r] = a.fixed[r]);
+    // assign neighbor choices to maximize coverage of `need` beyond fixed
+    const want = cloneRes(need);
+    RES.forEach(r => { want[r] = Math.max(0, want[r] - out[r]); });
+    a.choices.forEach(set => {
+      // pick a resource in this set that is still wanted
+      let pick = null;
+      for (const r of set) { if (want[r] > 0) { pick = r; break; } }
+      if (pick == null) pick = set[0];
+      out[pick] += 1; if (want[pick] > 0) want[pick]--;
+    });
+    return out;
+  }
+
+  /* ----------------------------------------------------------
+     MILITARY resolution at end of age.
+     ---------------------------------------------------------- */
+  function shieldsOf(player) {
+    let s = 0;
+    (player.built || []).forEach(c => { if (c.shields) s += c.shields; });
+    (player.stagesBuilt || []).forEach(si => { const e = player.wonder.stages[si].effect; if (e.shields) s += e.shields; });
+    (player.leaders || []).forEach(l => { if (l.effect && l.effect.shields) s += l.effect.shields; });
+    return s;
+  }
+  function resolveMilitary(players, age) {
+    const win = age === 1 ? 1 : age === 2 ? 3 : 5;
+    const n = players.length;
+    players.forEach((p, i) => {
+      const left = players[(i - 1 + n) % n];
+      const right = players[(i + 1) % n];
+      [left, right].forEach(opp => {
+        const a = shieldsOf(p), b = shieldsOf(opp);
+        if (a > b) { p.military = (p.military || 0) + win; p.warTokens = p.warTokens || []; p.warTokens.push(win); }
+        else if (a < b) { p.military = (p.military || 0) - 1; p.defeats = (p.defeats || 0) + 1; }
+      });
+    });
+  }
+
+  /* ----------------------------------------------------------
+     SCORING
+     ---------------------------------------------------------- */
+  function countColor(player, color) {
+    const colors = Array.isArray(color) ? color : [color];
+    return (player.built || []).filter(c => colors.indexOf(c.color) >= 0).length;
+  }
+  function scienceSymbols(player) {
+    const sym = { compass: 0, gear: 0, tablet: 0 };
+    let wild = 0;
+    (player.built || []).forEach(c => { if (c.science) sym[c.science]++; });
+    (player.stagesBuilt || []).forEach(si => { const e = player.wonder.stages[si].effect; if (e.science) sym[e.science]++; if (e.scienceWild) wild++; });
+    (player.leaders || []).forEach(l => { if (!l.effect) return; if (l.effect.science) sym[l.effect.science]++; if (l.effect.scienceWild) wild++; });
+    // Scientists guild wild
+    (player.built || []).forEach(c => { if (c.effect && c.effect.scienceWild) wild++; });
+    return { sym, wild };
+  }
+  function scienceScore(player) {
+    const { sym, wild } = scienceSymbols(player);
+    // distribute wilds to maximize: try all distributions (wild small)
+    let best = 0;
+    function val(s) { return s.compass * s.compass + s.gear * s.gear + s.tablet * s.tablet + 7 * Math.min(s.compass, s.gear, s.tablet); }
+    function rec(w, s) {
+      if (w === 0) { best = Math.max(best, val(s)); return; }
+      ['compass', 'gear', 'tablet'].forEach(k => { s[k]++; rec(w - 1, s); s[k]--; });
+    }
+    rec(wild, Object.assign({}, sym));
+    return best;
+  }
+  function scoreBreakdown(player, players, idx) {
+    const n = players.length;
+    const left = players[(idx - 1 + n) % n];
+    const right = players[(idx + 1) % n];
+    const b = { military: player.military || 0, coins: 0, wonder: 0, civilian: 0, commercial: 0, guild: 0, science: 0, leaders: 0 };
+    // coins
+    b.coins = Math.floor((player.coins || 0) / 3);
+    // wonder stage VP
+    (player.stagesBuilt || []).forEach(si => { const e = player.wonder.stages[si].effect; if (e.vp) b.wonder += e.vp; });
+    // civilian blue
+    (player.built || []).forEach(c => { if (c.color === 'blue' && c.vp) b.civilian += c.vp; });
+    // commercial yellow effects (coinVpPer)
+    (player.built || []).forEach(c => {
+      if (c.effect && c.effect.coinVpPer) {
+        const e = c.effect.coinVpPer; let cnt = 0;
+        if (e.scope === 'self') cnt = countColor(player, e.color);
+        b.commercial += cnt * e.vp;
+      }
+    });
+    (player.built || []).forEach(c => {
+      if (c.effect && c.effect.coinVpPerStage) { b.commercial += (player.stagesBuilt || []).length * c.effect.coinVpPerStage.vp; }
+    });
+    // guilds purple
+    (player.built || []).forEach(c => {
+      if (c.color !== 'purple' || !c.effect) return;
+      const e = c.effect;
+      if (e.vpPer) {
+        let cnt = 0;
+        if (e.vpPer.scope === 'neighbors') cnt = countColor(left, e.vpPer.color) + countColor(right, e.vpPer.color);
+        else if (e.vpPer.scope === 'self') cnt = countColor(player, e.vpPer.color);
+        b.guild += cnt * e.vpPer.vp;
+      }
+      if (e.vpPerDefeat) { b.guild += ((left.defeats || 0) + (right.defeats || 0)) * e.vpPerDefeat.vp; }
+      if (e.vpPerStage && e.vpPerStage.scope === 'selfNeighbors') {
+        const st = (player.stagesBuilt || []).length + (left.stagesBuilt || []).length + (right.stagesBuilt || []).length;
+        b.guild += st * e.vpPerStage.vp;
+      }
+    });
+    // science
+    b.science = scienceScore(player);
+    // leaders
+    (player.leaders || []).forEach(l => {
+      const e = l.effect; if (!e) return;
+      if (e.vp) b.leaders += e.vp;
+      if (e.vpPerStage && (e.vpPerStage.scope === 'self')) b.leaders += (player.stagesBuilt || []).length * e.vpPerStage.vp;
+      if (e.vpPerCoins) b.leaders += Math.floor((player.coins || 0) / e.vpPerCoins);
+      if (e.vpScienceSet) { const { sym, wild } = scienceSymbols(player); const sets = Math.min(sym.compass, sym.gear, sym.tablet); b.leaders += sets * e.vpScienceSet; }
+    });
+    b.total = b.military + b.coins + b.wonder + b.civilian + b.commercial + b.guild + b.science + b.leaders;
+    return b;
+  }
+
+  root.SW = {
+    RAW, MAN, RES, COLORS, CARDS, WONDERS, LEADERS,
+    buildDeck, instCard, shuffle, production, payable, tradeRate,
+    shieldsOf, resolveMilitary, scoreBreakdown, scienceScore, scienceSymbols,
+    countColor, emptyRes, cloneRes,
+  };
+})(typeof module !== 'undefined' ? module.exports : (this.window = this.window || this));
+
+</script>
+<script>
+/* ============================================================
+   SEVEN WONDERS — Game flow + AI bot (built on engine.js)
+   ============================================================ */
+(function (root, SW) {
+  'use strict';
+
+  function newGame(opts) {
+    // opts: { seats:[{id,name,bot}], wonders?:[shortNames], useLeaders:bool }
+    const seats = opts.seats;
+    const n = seats.length;
+    const wpool = SW.shuffle(SW.WONDERS.slice());
+    const players = seats.map((s, i) => {
+      const w = opts.wonders && opts.wonders[i]
+        ? SW.WONDERS.find(x => x.short === opts.wonders[i])
+        : wpool[i % wpool.length];
+      return {
+        id: s.id, name: s.name, bot: !!s.bot, seat: i,
+        wonder: w, built: [], stagesBuilt: [], coins: 3,
+        military: 0, defeats: 0, warTokens: [],
+        leaders: [], leaderHand: [],
+        hand: [], pendingMove: null,
+        freeBuildTokens: 0, usedFreeThisAge: false,
+        builtNamesEver: {},
+      };
+    });
+    const g = {
+      players, n, age: 1, turn: 1, phase: 'play',
+      useLeaders: !!opts.useLeaders,
+      discard: [], log: [], version: 1,
+      direction: 1, // age1 pass left (to higher seat), age2 right, age3 left
+    };
+    if (g.useLeaders) {
+      dealLeaders(g);
+      g.phase = 'leaderDraft';
+    } else {
+      startAge(g, 1);
+    }
+    return g;
+  }
+
+  function dealLeaders(g) {
+    const need = 4 * g.n;
+    let base = SW.LEADERS.slice();
+    let pool = [];
+    while (pool.length < need) pool = pool.concat(base);
+    pool = SW.shuffle(pool.map(l => SW.instCard(l))).slice(0, need);
+    g.players.forEach(p => { p.leaderHand = pool.splice(0, 4); });
+    g.leaderDraftRound = 1;
+    g.direction = 1;
+  }
+
+  function startAge(g, age) {
+    g.age = age; g.turn = 1; g.phase = 'play';
+    g.direction = (age === 2) ? -1 : 1;
+    const decks = SW.buildDeck(age, g.n);
+    // distribute 7 to each player
+    g.players.forEach((p, i) => { p.hand = decks.slice(i * 7, i * 7 + 7); p.usedFreeThisAge = false; p.pendingMove = null; });
+    log(g, `— Age ${age} begins —`);
+  }
+
+  function log(g, msg) { g.log.push(msg); if (g.log.length > 200) g.log.shift(); }
+
+  function neighbors(g, idx) {
+    const n = g.n;
+    return { left: g.players[(idx - 1 + n) % n], right: g.players[(idx + 1) % n] };
+  }
+
+  // ---- enumerate legal moves for player p in current hand ----
+  function legalMoves(g, p) {
+    const idx = p.seat;
+    const nb = neighbors(g, idx);
+    const moves = [];
+    const hand = g.useLeaders && g.phase === 'leaderDraft' ? p.leaderHand : p.hand;
+    hand.forEach(card => {
+      if (g.phase === 'leaderDraft') {
+        moves.push({ type: 'pickLeader', uid: card.uid, card });
+        return;
+      }
+      // BUILD card
+      const already = p.built.some(b => b.name === card.name) || p.leaders.some(l => l.name === card.name);
+      if (card.color !== 'grey' && card.color !== 'brown' && already) {
+        // cannot build duplicate named card (except resource cards duplicates allowed)
+      } else {
+        // chain free?
+        let chainFree = false;
+        if (card.chainFrom) chainFree = card.chainFrom.some(name => p.built.some(b => b.name === name));
+        if (chainFree) {
+          moves.push({ type: 'build', uid: card.uid, card, pay: { ok: true, coinsToNeighbors: 0, totalCoins: 0 }, free: true });
+        } else {
+          const pay = SW.payable(p, card, nb);
+          if (pay.ok) moves.push({ type: 'build', uid: card.uid, card, pay });
+        }
+      }
+      // BUILD WONDER STAGE using this card as currency
+      const nextStage = p.stagesBuilt.length;
+      if (nextStage < p.wonder.stages.length) {
+        const stage = p.wonder.stages[nextStage];
+        const fake = { name: 'wonderStage', cost: { coins: 0, res: discount(p, stage.cost) } };
+        const pay = SW.payable(p, fake, nb);
+        if (pay.ok) moves.push({ type: 'wonder', uid: card.uid, stageIndex: nextStage, pay });
+      }
+      // DISCARD for 3 coins (always legal during play)
+      moves.push({ type: 'discard', uid: card.uid });
+      // FREE BUILD (Olympia stage2 / Solomon) once per age
+      if (p.freeBuildTokens > 0 && !p.usedFreeThisAge && card.color !== 'grey' && card.color !== 'brown') {
+        if (!already) moves.push({ type: 'build', uid: card.uid, card, pay: { ok: true, coinsToNeighbors: 0, totalCoins: 0 }, free: true, viaToken: true });
+      }
+    });
+    return moves;
+  }
+
+  function discount(p, resCost) {
+    // wonderDiscount leaders reduce 1 of each resource type
+    const has = p.leaders.some(l => l.effect && l.effect.wonderDiscount);
+    const out = SW.cloneRes(resCost);
+    if (has) SW.RES.forEach(r => { if (out[r] > 0) out[r] = Math.max(0, out[r] - 1); });
+    return out;
+  }
+
+  // ---- commit a move (stores pending) ----
+  function commitMove(g, playerId, move) {
+    const p = g.players.find(x => x.id === playerId);
+    if (!p || p.pendingMove) return false;
+    p.pendingMove = move;
+    return true;
+  }
+
+  function allCommitted(g) { return g.players.every(p => p.pendingMove); }
+
+  // ---- resolve a full turn once all committed ----
+  function resolveTurn(g) {
+    if (g.phase === 'leaderDraft') return resolveLeaderPick(g);
+    const played = [];
+    g.players.forEach(p => {
+      const mv = p.pendingMove; if (!mv) return;
+      const hand = p.hand;
+      const ci = hand.findIndex(c => c.uid === mv.uid);
+      const card = ci >= 0 ? hand[ci] : null;
+      if (!card) { p.pendingMove = null; return; }
+      hand.splice(ci, 1);
+      const nb = neighbors(g, p.seat);
+      if (mv.type === 'build') {
+        if (mv.viaToken) { p.usedFreeThisAge = true; }
+        const coins = (mv.pay && mv.pay.totalCoins) || 0;
+        const toNb = (mv.pay && mv.pay.coinsToNeighbors) || 0;
+        p.coins -= coins;
+        distributeTrade(g, p, mv.pay);
+        applyCardEffects(g, p, card);
+        p.built.push(card);
+        log(g, `${p.name} built ${card.name}${coins ? ' (' + coins + 'c)' : ''}.`);
+      } else if (mv.type === 'wonder') {
+        const coins = (mv.pay && mv.pay.totalCoins) || 0;
+        p.coins -= coins;
+        distributeTrade(g, p, mv.pay);
+        const si = p.stagesBuilt.length;
+        p.stagesBuilt.push(si);
+        applyStageEffects(g, p, p.wonder.stages[si].effect);
+        g.discard.push(card);
+        log(g, `${p.name} built a Wonder stage.`);
+      } else if (mv.type === 'discard') {
+        p.coins += 3;
+        g.discard.push(card);
+        log(g, `${p.name} discarded a card for 3 coins.`);
+      }
+      p.pendingMove = null;
+    });
+    // pass hands
+    passHands(g);
+    g.turn += 1;
+    // Age has 6 play-turns (7 cards, last one discarded automatically — but with
+    // some effects you keep playing; standard: 6 turns then last card is discarded)
+    const turnsThisAge = 6;
+    if (g.turn > turnsThisAge) {
+      // discard remaining single cards
+      g.players.forEach(p => { p.hand.forEach(c => g.discard.push(c)); p.hand = []; });
+      endAge(g);
+    }
+    g.version++;
+  }
+
+  function passHands(g) {
+    const n = g.n;
+    const hands = g.players.map(p => p.hand);
+    g.players.forEach((p, i) => {
+      const from = g.direction === 1 ? (i + 1) % n : (i - 1 + n) % n;
+      p.hand = hands[from];
+    });
+  }
+
+  function resolveLeaderPick(g) {
+    g.players.forEach(p => {
+      const mv = p.pendingMove; if (!mv) return;
+      const ci = p.leaderHand.findIndex(c => c.uid === mv.uid);
+      if (ci >= 0) { p.chosenLeader = p.leaderHand.splice(ci, 1)[0]; }
+      p.pendingMove = null;
+    });
+    // store chosen, pass remaining
+    g.players.forEach(p => { p.leadersChosen = p.leadersChosen || []; if (p.chosenLeader) { p.leadersChosen.push(p.chosenLeader); p.chosenLeader = null; } });
+    const n = g.n;
+    const hands = g.players.map(p => p.leaderHand);
+    g.players.forEach((p, i) => { const from = (i + 1) % n; p.leaderHand = hands[from]; });
+    g.leaderDraftRound++;
+    g.version++;
+    if (g.leaderDraftRound > 4) {
+      // recruit phase simplified: players auto-pay coins for as many chosen leaders
+      // as they can afford; place them. (Simplified single-step recruit.)
+      g.players.forEach(p => {
+        (p.leadersChosen || []).forEach(l => {
+          const c = (l.cost && l.cost.coins) || 0;
+          if (p.coins >= c) { p.coins -= c; applyLeader(g, p, l); p.leaders.push(l); }
+        });
+        p.leaderHand = [];
+      });
+      log(g, 'Leaders recruited.');
+      startAge(g, 1);
+    }
+  }
+
+  function distributeTrade(g, buyer, pay) {
+    // We didn't track which neighbor sold; approximate by splitting coins to
+    // whichever neighbor(s) the solver used. For simplicity, the solver returned
+    // coinsToNeighbors total. We credit left/right proportionally is hard; we
+    // instead credit nothing-tracked. To keep economy correct, give coins to the
+    // neighbor pool: here we credit both neighbors evenly is inaccurate. Instead,
+    // recompute split.
+    if (!pay || !pay.coinsToNeighbors) return;
+    // Re-derive split using same greedy as payable but track sides.
+    // Simplest faithful approach: the coins leave buyer (already deducted) and go
+    // to neighbors. We approximate by giving all to the side that could supply.
+    // For gameplay fairness we split based on recorded breakdown if present.
+    if (pay.tradeSplit) {
+      const nb = neighbors(g, buyer.seat);
+      nb.left.coins += pay.tradeSplit.left || 0;
+      nb.right.coins += pay.tradeSplit.right || 0;
+    } else {
+      // fallback: give to both neighbors split
+      const nb = neighbors(g, buyer.seat);
+      const half = Math.floor(pay.coinsToNeighbors / 2);
+      nb.left.coins += half; nb.right.coins += (pay.coinsToNeighbors - half);
+    }
+  }
+
+  function applyCardEffects(g, p, card) {
+    if (card.coins) p.coins += card.coins;
+    if (card.effect) {
+      const e = card.effect;
+      if (e.coinPer) {
+        const nb = neighbors(g, p.seat);
+        let cnt = SW.countColor(p, e.coinPer.color);
+        if (e.coinPer.scope === 'all') cnt += SW.countColor(nb.left, e.coinPer.color) + SW.countColor(nb.right, e.coinPer.color);
+        p.coins += cnt * e.coinPer.coins;
+      }
+      if (e.coinVpPer) { let cnt = SW.countColor(p, e.coinVpPer.color); p.coins += cnt * e.coinVpPer.coins; }
+      if (e.coinVpPerStage) { p.coins += p.stagesBuilt.length * e.coinVpPerStage.coins; }
+    }
+  }
+
+  function applyStageEffects(g, p, e) {
+    if (e.vp) {/* scored later */ }
+    if (e.coins) p.coins += e.coins;
+    if (e.freeBuildPerAge) p.freeBuildTokens += 1;
+    // shields, science, produceChoice handled in engine reads
+  }
+
+  function applyLeader(g, p, l) {
+    const e = l.effect; if (!e) return;
+    if (e.coins) p.coins += e.coins;
+    if (e.freeBuildPerAge) p.freeBuildTokens += 1;
+  }
+
+  function endAge(g) {
+    SW.resolveMilitary(g.players, g.age);
+    log(g, `Age ${g.age} conflicts resolved.`);
+    if (g.age < 3) { startAge(g, g.age + 1); }
+    else { g.phase = 'finished'; finalScore(g); }
+  }
+
+  function finalScore(g) {
+    g.results = g.players.map((p, i) => ({ id: p.id, name: p.name, wonder: p.wonder.short, breakdown: SW.scoreBreakdown(p, g.players, i) }));
+    g.results.sort((a, b) => b.breakdown.total - a.breakdown.total || b.breakdown.coins - a.breakdown.coins);
+  }
+
+  /* ----------------------------------------------------------
+     AI BOT — heuristic move selection
+     ---------------------------------------------------------- */
+  function botMove(g, p) {
+    const moves = legalMoves(g, p);
+    if (g.phase === 'leaderDraft') {
+      // pick leader by rough value
+      let best = moves[0], bestV = -1;
+      moves.forEach(m => { const v = leaderValue(m.card); if (v > bestV) { bestV = v; best = m; } });
+      return best;
+    }
+    let best = null, bestScore = -1e9;
+    moves.forEach(m => {
+      const s = scoreMove(g, p, m);
+      if (s > bestScore) { bestScore = s; best = m; }
+    });
+    return best || moves[moves.length - 1];
+  }
+
+  function leaderValue(card) {
+    const e = card.effect || {}; let v = 1;
+    if (e.vp) v += e.vp; if (e.shields) v += e.shields * 2.5; if (e.scienceWild) v += 5;
+    if (e.science) v += 4; if (e.coins) v += e.coins * 0.3; if (e.freeBuildPerAge) v += 5;
+    if (e.vpScienceSet) v += e.vpScienceSet * 0.5; if (e.wonderDiscount) v += 3;
+    if (e.vpPerStage) v += 3; if (e.vpPerCoins) v += 1;
+    v -= (card.cost.coins || 0) * 0.3;
+    return v;
+  }
+
+  function scoreMove(g, p, m) {
+    const card = m.card;
+    const nb = neighbors(g, p.seat);
+    if (m.type === 'discard') return 1.5 + (g.age === 3 ? 0 : 0); // baseline
+    if (m.type === 'wonder') {
+      const eff = p.wonder.stages[m.stageIndex].effect;
+      let v = 6;
+      if (eff.vp) v += eff.vp * 1.1;
+      if (eff.shields) v += eff.shields * 3;
+      if (eff.coins) v += eff.coins * 0.4;
+      if (eff.scienceWild) v += 6; if (eff.produceChoice) v += 4; if (eff.freeBuildPerAge) v += 6;
+      v -= ((m.pay && m.pay.coinsToNeighbors) || 0) * 0.6;
+      return v;
+    }
+    // build
+    let v = 0.5;
+    const cost = (m.pay && m.pay.coinsToNeighbors) || 0;
+    v -= cost * 0.7;
+    switch (card.color) {
+      case 'blue': v += (card.vp || 0) * 1.3; break;
+      case 'red': v += (card.shields || 0) * 3.2; break;
+      case 'green': v += 6.5; break; // science compounds
+      case 'brown': case 'grey': v += 4 - g.age * 0.8; break; // resources early
+      case 'yellow':
+        v += 3;
+        if (card.coins) v += card.coins * 0.4;
+        if (card.effect && (card.effect.coinVpPer || card.effect.coinVpPerStage)) v += 4;
+        break;
+      case 'purple':
+        v += 5; // guild VP varies
+        break;
+    }
+    if (card.chainTo && card.chainTo.length) v += 1.2; // sets up free chains
+    // military pressure: if losing to neighbors, value red more
+    if (card.color === 'red') {
+      const myShields = SW.shieldsOf(p);
+      const need = Math.max(SW.shieldsOf(nb.left), SW.shieldsOf(nb.right)) - myShields;
+      if (need > 0) v += Math.min(need, 2) * 1.5;
+    }
+    return v;
+  }
+
+  // Drive all bots to commit moves for current turn.
+  function autoCommitBots(g) {
+    g.players.forEach(p => { if (p.bot && !p.pendingMove) { const m = botMove(g, p); commitMove(g, p.id, m); } });
+  }
+
+  // Convenience: run a whole game with all-bots (for testing).
+  function simulate(opts) {
+    const g = newGame(opts);
+    let guard = 0;
+    while (g.phase !== 'finished' && guard++ < 500) {
+      autoCommitBots(g);
+      // any non-bot would block; in sim all bots
+      if (allCommitted(g)) resolveTurn(g);
+      else break;
+    }
+    return g;
+  }
+
+  root.SWGame = {
+    newGame, startAge, legalMoves, commitMove, allCommitted, resolveTurn,
+    neighbors, botMove, autoCommitBots, simulate, finalScore,
+  };
+})(typeof module !== 'undefined' ? module.exports : (this.window = this.window || this),
+   typeof module !== 'undefined' ? require('./engine.js').SW : (this.window || this).SW);
+
+</script>
+<script>
+/* ============================================================
+   SEVEN WONDERS — UI / controller / multiplayer
+   Depends on window.SW (engine) and window.SWGame (flow).
+   ============================================================ */
+(function () {
+  'use strict';
+  const SW = window.SW, G = window.SWGame;
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+  // ---------- icon helpers ----------
+  const RES_META = {
+    wood: ['Wood', '#7c4a2d', 'Wd'], stone: ['Stone', '#9aa0a6', 'St'], clay: ['Clay', '#b5683f', 'Cl'],
+    ore: ['Ore', '#4f5b66', 'Or'], glass: ['Glass', '#3fa7c4', 'Gl'], papyrus: ['Papyrus', '#c9b24a', 'Pa'], loom: ['Loom', '#a8528f', 'Lo'],
+  };
+  function resChip(r, n) {
+    const m = RES_META[r]; if (!m) return '';
+    const count = n && n > 1 ? `<sub>${n}</sub>` : '';
+    return `<span class="res" style="--rc:${m[1]}" title="${m[0]}">${m[2]}${count}</span>`;
+  }
+  function costHTML(card, p) {
+    const c = card.cost || { coins: 0, res: {} };
+    const parts = [];
+    if (c.coins) parts.push(`<span class="coin">${c.coins}</span>`);
+    SW.RES.forEach(r => { if (c.res && c.res[r]) parts.push(resChip(r, c.res[r])); });
+    if (!parts.length) return '<span class="free">free</span>';
+    return parts.join('');
+  }
+  const SCI = { compass: ['◎', 'Compass'], gear: ['✦', 'Gear'], tablet: ['▤', 'Tablet'] };
+  function effectHTML(card) {
+    const out = [];
+    if (card.vp) out.push(`<span class="vp">${card.vp}▲</span>`);
+    if (card.shields) out.push(`<span class="mil">${'⚔'.repeat(Math.min(card.shields, 3))}</span>`);
+    if (card.coins) out.push(`<span class="coin">+${card.coins}</span>`);
+    if (card.science) out.push(`<span class="sci">${SCI[card.science][0]}</span>`);
+    if (card.produce) SW.RES.forEach(r => { if (card.produce[r]) out.push(resChip(r, card.produce[r])); });
+    if (card.choice) out.push('<span class="choice">' + card.choice.map(s => resChip(Object.keys(s)[0])).join('/') + '</span>');
+    if (card.effect && card.effect.trade) out.push('<span class="tag">trade</span>');
+    if (card.effect && (card.effect.coinPer || card.effect.coinVpPer || card.effect.coinVpPerStage)) out.push('<span class="tag">$/▲</span>');
+    if (card.color === 'purple') out.push('<span class="tag">guild</span>');
+    return out.join(' ');
+  }
+
+  // ---------- app state ----------
+  const App = {
+    screen: 'home',
+    g: null,
+    mode: null,            // 'bots' | 'hotseat' | 'online'
+    viewSeat: 0,           // seat currently shown
+    online: null,          // {code, seat, isHost}
+    pendingPass: false,    // hotseat interstitial
+    selectedUid: null,
+    storageKeyPrefix: 'sw1_',
+  };
+
+  // ---------- screens ----------
+  const rootEl = () => $('#app');
+
+  function show(screen) { App.screen = screen; render(); }
+
+  function render() {
+    const r = rootEl(); r.innerHTML = '';
+    if (App.screen === 'home') return renderHome(r);
+    if (App.screen === 'setup') return renderSetup(r);
+    if (App.screen === 'lobby') return renderLobby(r);
+    if (App.screen === 'game') return renderGame(r);
+    if (App.screen === 'pass') return renderPass(r);
+    if (App.screen === 'score') return renderScore(r);
+  }
+
+  // ===== HOME =====
+  function renderHome(r) {
+    const wrap = el('div', 'home');
+    wrap.innerHTML = `
+      <div class="home-hero">
+        <div class="eyebrow">A game of antiquity</div>
+        <h1>SEVEN<br><span>WONDERS</span></h1>
+        <p class="tag-line">Draft cards, raise a wonder of the ancient world, out-build seven rival cities across three ages.</p>
+      </div>
+      <div class="home-modes">
+        <button class="mode-btn" data-mode="bots">
+          <span class="mb-title">Play vs Bots</span>
+          <span class="mb-sub">Solo against AI civilizations. Always available.</span>
+        </button>
+        <button class="mode-btn" data-mode="hotseat">
+          <span class="mb-title">Pass &amp; Play</span>
+          <span class="mb-sub">Several players, one device. Pass it around.</span>
+        </button>
+        <button class="mode-btn" data-mode="online">
+          <span class="mb-title">Online Room</span>
+          <span class="mb-sub">Create or join a room with a code. Play together live.</span>
+        </button>
+      </div>
+      <div class="home-foot">Expansion: <b>Leaders</b> can be enabled in setup. 3–7 players.</div>
+    `;
+    $$('.mode-btn', wrap).forEach(b => b.onclick = () => {
+      App.mode = b.dataset.mode;
+      if (App.mode === 'online') openOnlineEntry();
+      else show('setup');
+    });
+    r.appendChild(wrap);
+  }
+
+  // ===== SETUP (bots / hotseat) =====
+  const SetupState = { count: 4, leaders: false, names: ['You', 'Bot 2', 'Bot 3', 'Bot 4', 'Bot 5', 'Bot 6', 'Bot 7'] };
+  function renderSetup(r) {
+    const isHot = App.mode === 'hotseat';
+    if (isHot) SetupState.names = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7'];
+    const wrap = el('div', 'setup');
+    wrap.innerHTML = `
+      <button class="back">← back</button>
+      <h2>${isHot ? 'Pass &amp; Play' : 'Play vs Bots'}</h2>
+      <label class="field"><span>Players</span>
+        <div class="stepper">
+          <button data-d="-1">−</button><b id="pc">${SetupState.count}</b><button data-d="1">+</button>
+        </div>
+      </label>
+      <div id="names" class="names"></div>
+      <label class="toggle"><input type="checkbox" id="lead" ${SetupState.leaders ? 'checked' : ''}><span>Leaders expansion</span>
+        <small>Draft a leader for your city before the ages begin.</small></label>
+      <button class="primary" id="start">Begin the ages</button>
+    `;
+    $('.back', wrap).onclick = () => show('home');
+    const drawNames = () => {
+      const nm = $('#names', wrap); nm.innerHTML = '';
+      for (let i = 0; i < SetupState.count; i++) {
+        const row = el('div', 'name-row');
+        const human = isHot ? true : i === 0;
+        row.innerHTML = `<span class="seat-tag ${human ? 'you' : 'bot'}">${human ? (isHot ? 'P' + (i + 1) : 'You') : 'AI'}</span>
+          <input type="text" value="${SetupState.names[i]}" data-i="${i}" ${human ? '' : ''}>`;
+        nm.appendChild(row);
+      }
+      $$('#names input', wrap).forEach(inp => inp.oninput = () => { SetupState.names[inp.dataset.i] = inp.value; });
+    };
+    drawNames();
+    $$('.stepper button', wrap).forEach(b => b.onclick = () => {
+      SetupState.count = Math.max(3, Math.min(7, SetupState.count + (+b.dataset.d)));
+      $('#pc', wrap).textContent = SetupState.count; drawNames();
+    });
+    $('#lead', wrap).onchange = e => SetupState.leaders = e.target.checked;
+    $('#start', wrap).onclick = () => startLocalGame(isHot);
+    r.appendChild(wrap);
+  }
+
+  function startLocalGame(isHot) {
+    const seats = [];
+    for (let i = 0; i < SetupState.count; i++) {
+      seats.push({ id: 'p' + i, name: SetupState.names[i] || ('Player ' + (i + 1)), bot: isHot ? false : i !== 0 });
+    }
+    App.g = G.newGame({ seats, useLeaders: SetupState.leaders });
+    App.viewSeat = 0;
+    if (isHot) { App.mode = 'hotseat'; beginHotseatTurn(); }
+    else { App.mode = 'bots'; show('game'); }
+  }
+
+  // ===== GAME RENDER =====
+  function viewer() { return App.g.players[App.viewSeat]; }
+  function ageLabel(a) { return ['I', 'II', 'III'][a - 1]; }
+
+  function renderGame(r) {
+    const g = App.g, me = viewer();
+    const wrap = el('div', 'game');
+
+    // top bar
+    const top = el('div', 'topbar');
+    const dirArrow = g.direction === 1 ? '↻ left' : '↺ right';
+    top.innerHTML = `
+      <div class="age-track">
+        ${[1, 2, 3].map(a => `<span class="age-pip ${a === g.age ? 'on' : ''} ${a < g.age ? 'done' : ''}">${ageLabel(a)}</span>`).join('')}
+      </div>
+      <div class="turn-info">
+        ${g.phase === 'leaderDraft' ? `Leader draft · round ${g.leaderDraftRound}/4` : `Age ${ageLabel(g.age)} · turn ${Math.min(g.turn, 6)}/6 · pass ${dirArrow}`}
+      </div>
+      <div class="top-right">
+        <span class="coinbox" title="Coins">⊙ ${me.coins}</span>
+        <button class="ghost" id="logbtn">Log</button>
+        <button class="ghost" id="menubtn">Menu</button>
+      </div>`;
+    wrap.appendChild(top);
+
+    // opponents row
+    const opp = el('div', 'opponents');
+    const n = g.n;
+    // show in seating order around the table, viewer's neighbors flagged
+    g.players.forEach((p, i) => {
+      if (i === App.viewSeat) return;
+      const rel = (i === (App.viewSeat - 1 + n) % n) ? 'left' : (i === (App.viewSeat + 1) % n) ? 'right' : '';
+      opp.appendChild(cityCard(p, i, rel, false));
+    });
+    wrap.appendChild(opp);
+
+    // your area: wonder + tableau
+    const mine = el('div', 'myarea');
+    mine.appendChild(wonderBoard(me, true));
+    mine.appendChild(tableau(me, true));
+    wrap.appendChild(mine);
+
+    // hand / action
+    const handWrap = el('div', 'handwrap');
+    const committed = !!me.pendingMove;
+    const canAct = canViewerAct();
+    const handTitle = g.phase === 'leaderDraft' ? 'Choose a leader' : (committed ? 'Move locked — waiting…' : 'Your hand — choose a card');
+    handWrap.appendChild(el('div', 'hand-title', handTitle));
+    handWrap.appendChild(handRow(me, canAct && !committed));
+    wrap.appendChild(handWrap);
+
+    // waiting status (online)
+    if (App.mode === 'online') {
+      const w = el('div', 'online-status');
+      const waiting = g.players.filter(p => !p.bot && !p.pendingMove).map(p => p.name);
+      w.innerHTML = committed
+        ? `Waiting for: ${waiting.length ? waiting.join(', ') : 'resolution…'} <span class="dot"></span>`
+        : `Room <b>${App.online.code}</b> · you are <b>${me.name}</b>`;
+      wrap.appendChild(w);
+    }
+
+    r.appendChild(wrap);
+
+    // detail/action panel host
+    const panel = el('div', 'panel-host'); panel.id = 'panelhost'; r.appendChild(panel);
+
+    $('#menubtn', wrap).onclick = openMenu;
+    $('#logbtn', wrap).onclick = openLog;
+  }
+
+  function canViewerAct() {
+    const g = App.g, me = viewer();
+    if (g.phase === 'finished') return false;
+    if (App.mode === 'bots') return App.viewSeat === 0 && !me.pendingMove;
+    if (App.mode === 'hotseat') return !me.pendingMove;
+    if (App.mode === 'online') return App.viewSeat === App.online.seat && !me.pendingMove;
+    return false;
+  }
+
+  // compact opponent city
+  function cityCard(p, idx, rel, full) {
+    const c = el('div', 'city' + (rel ? ' nb-' + rel : ''));
+    const counts = {}; SW.COLORS.forEach(col => counts[col] = 0);
+    p.built.forEach(card => counts[card.color]++);
+    const shields = SW.shieldsOf(p);
+    const sci = SW.scienceSymbols(p);
+    const sciStr = ['compass', 'gear', 'tablet'].filter(k => sci.sym[k] || (k === 'compass' && sci.wild)).map(k => `${SCI[k][0]}${sci.sym[k]}`).join(' ') + (sci.wild ? ` +${sci.wild}?` : '');
+    const tokens = (p.warTokens || []).reduce((a, b) => a + b, 0);
+    c.innerHTML = `
+      <div class="city-head">
+        <span class="city-name">${escapeHtml(p.name)}</span>
+        ${rel ? `<span class="nb-tag">${rel}</span>` : ''}
+      </div>
+      <div class="city-wonder">${escapeHtml(p.wonder.short)} <span class="wpips">${p.wonder.stages.map((s, i) => `<i class="${i < p.stagesBuilt.length ? 'f' : ''}"></i>`).join('')}</span></div>
+      <div class="city-row">
+        ${colorDot('brown', counts.brown)}${colorDot('grey', counts.grey)}${colorDot('blue', counts.blue)}${colorDot('yellow', counts.yellow)}${colorDot('green', counts.green)}${colorDot('red', counts.red)}${counts.purple ? colorDot('purple', counts.purple) : ''}
+      </div>
+      <div class="city-stats">
+        <span title="Coins">⊙${p.coins}</span>
+        <span title="Shields" class="s-mil">⚔${shields}</span>
+        <span title="War result" class="${(p.military || 0) >= 0 ? 'pos' : 'neg'}">${(p.military || 0) >= 0 ? '+' : ''}${p.military || 0}</span>
+        ${sciStr.trim() ? `<span class="s-sci">${sciStr}</span>` : ''}
+      </div>`;
+    c.onclick = () => openCityDetail(p, idx);
+    return c;
+  }
+  function colorDot(col, n) {
+    if (!n) return `<span class="cdot empty" data-col="${col}"></span>`;
+    return `<span class="cdot" data-col="${col}">${n}</span>`;
+  }
+
+  function wonderBoard(p, mineFlag) {
+    const w = el('div', 'wonder');
+    const stages = p.wonder.stages.map((s, i) => {
+      const built = i < p.stagesBuilt.length;
+      const eff = s.effect;
+      let icon = '';
+      if (eff.vp) icon = `${eff.vp}▲`;
+      else if (eff.shields) icon = '⚔'.repeat(eff.shields);
+      else if (eff.coins) icon = `+${eff.coins}⊙`;
+      else if (eff.scienceWild) icon = '?sci';
+      else if (eff.produceChoice) icon = 'res?';
+      else if (eff.freeBuildPerAge) icon = 'free';
+      const cost = SW.RES.filter(r => s.cost[r]).map(r => resChip(r, s.cost[r])).join('');
+      return `<div class="stage ${built ? 'built' : ''}">
+          <div class="stage-cost">${cost}</div>
+          <div class="stage-reward">${icon}</div>
+        </div>`;
+    }).join('');
+    w.innerHTML = `
+      <div class="wonder-name">${escapeHtml(p.wonder.name)}</div>
+      <div class="wonder-sub">starts with ${resChip(p.wonder.start)} · ${p.leaders && p.leaders.length ? 'leaders: ' + p.leaders.map(l => l.name).join(', ') : 'no leader'}</div>
+      <div class="stages">${stages}</div>`;
+    return w;
+  }
+
+  function tableau(p, mineFlag) {
+    const t = el('div', 'tableau');
+    const order = ['brown', 'grey', 'red', 'yellow', 'green', 'blue', 'purple'];
+    order.forEach(col => {
+      const cards = p.built.filter(c => c.color === col);
+      if (!cards.length) return;
+      const colDiv = el('div', 'tcol');
+      cards.forEach((c, i) => {
+        const card = el('div', 'tcard c-' + col);
+        card.style.top = (i * 22) + 'px';
+        card.innerHTML = `<span class="tc-name">${escapeHtml(c.name)}</span><span class="tc-eff">${effectHTML(c)}</span>`;
+        card.title = c.name;
+        colDiv.appendChild(card);
+      });
+      colDiv.style.height = (cards.length * 22 + 40) + 'px';
+      t.appendChild(colDiv);
+    });
+    if (!p.built.length) t.appendChild(el('div', 'empty-note', 'No buildings yet. Your city awaits.'));
+    return t;
+  }
+
+  function handRow(p, interactive) {
+    const g = App.g;
+    const hand = g.phase === 'leaderDraft' ? p.leaderHand : p.hand;
+    const row = el('div', 'hand');
+    const moves = interactive ? G.legalMoves(g, p) : [];
+    const byUid = {}; moves.forEach(m => { (byUid[m.uid] = byUid[m.uid] || []).push(m); });
+    if (p.pendingMove) {
+      row.appendChild(el('div', 'locked-note', 'Move locked in. ' + (App.mode === 'bots' ? 'Resolving…' : 'Waiting for others…')));
+      return row;
+    }
+    hand.forEach(card => {
+      const cd = el('div', 'handcard c-' + card.color);
+      const canBuild = (byUid[card.uid] || []).some(m => m.type === 'build');
+      const canWonder = (byUid[card.uid] || []).some(m => m.type === 'wonder');
+      cd.innerHTML = `
+        <div class="hc-head"><span class="hc-name">${escapeHtml(card.name)}</span></div>
+        <div class="hc-cost">${card.cost && (card.cost.coins || Object.values(card.cost.res || {}).some(Boolean)) ? costHTML(card) : (card.leader ? '<span class="coin">' + (card.cost.coins || 0) + '</span>' : '<span class="free">free</span>')}</div>
+        <div class="hc-eff">${card.leader ? escapeHtml(card.desc || '') : effectHTML(card)}</div>
+        ${card.chainFrom ? `<div class="hc-chain">links from ${card.chainFrom.join('/')}</div>` : ''}
+        ${interactive ? `<div class="hc-flags">${canBuild ? '<i class="ok">build</i>' : '<i class="no">can\'t build</i>'}${canWonder ? '<i class="ok">wonder</i>' : ''}</div>` : ''}
+      `;
+      if (interactive) cd.onclick = () => openActions(card, byUid[card.uid] || []);
+      else cd.classList.add('static');
+      row.appendChild(cd);
+    });
+    return row;
+  }
+
+  // ===== action sheet =====
+  function openActions(card, moves) {
+    const host = $('#panelhost'); if (!host) return;
+    const g = App.g, me = viewer();
+    const sheet = el('div', 'sheet');
+    const acts = [];
+    if (g.phase === 'leaderDraft') {
+      acts.push({ label: `Recruit ${escapeHtml(card.name)} later (pick)`, sub: card.desc, m: moves.find(m => m.type === 'pickLeader') });
+    } else {
+      const build = moves.find(m => m.type === 'build');
+      if (build) {
+        const cost = build.free ? (build.viaToken ? 'free (token)' : 'free (chain)') : (build.pay.totalCoins ? build.pay.totalCoins + ' coins' : 'free');
+        acts.push({ label: `Build ${escapeHtml(card.name)}`, sub: 'Cost: ' + cost, m: build, kind: 'build' });
+      } else {
+        acts.push({ label: `Build ${escapeHtml(card.name)}`, sub: 'You can’t afford this or already own it.', disabled: true });
+      }
+      const wonder = moves.find(m => m.type === 'wonder');
+      const nextStage = me.stagesBuilt.length;
+      if (wonder) {
+        const cost = wonder.pay.totalCoins ? wonder.pay.totalCoins + ' coins' : 'free';
+        acts.push({ label: `Bury under Wonder (stage ${nextStage + 1})`, sub: 'Cost: ' + cost + ' · gain stage reward', m: wonder, kind: 'wonder' });
+      } else if (nextStage < me.wonder.stages.length) {
+        acts.push({ label: `Build Wonder stage ${nextStage + 1}`, sub: 'You can’t afford the stage cost.', disabled: true });
+      }
+      const discard = moves.find(m => m.type === 'discard');
+      if (discard) acts.push({ label: 'Discard for 3 coins', sub: 'Sell the card to the bank.', m: discard, kind: 'discard' });
+    }
+    sheet.innerHTML = `<div class="sheet-card c-${card.color}">
+        <div class="sc-name">${escapeHtml(card.name)}</div>
+        <div class="sc-eff">${card.leader ? escapeHtml(card.desc || '') : effectHTML(card)}</div>
+      </div>`;
+    const list = el('div', 'sheet-acts');
+    acts.forEach(a => {
+      const b = el('button', 'act' + (a.disabled ? ' disabled' : '') + (a.kind ? ' k-' + a.kind : ''));
+      b.innerHTML = `<span class="act-label">${a.label}</span><span class="act-sub">${a.sub || ''}</span>`;
+      if (!a.disabled && a.m) b.onclick = () => { closePanel(); doCommit(a.m); };
+      list.appendChild(b);
+    });
+    sheet.appendChild(list);
+    const cancel = el('button', 'sheet-cancel', 'Cancel'); cancel.onclick = closePanel; sheet.appendChild(cancel);
+    const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
+    host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
+  }
+  function closePanel() { const h = $('#panelhost'); if (h) { h.innerHTML = ''; h.classList.remove('open'); } }
+
+  // ===== commit + advance =====
+  function doCommit(move) {
+    const g = App.g, me = viewer();
+    G.commitMove(g, me.id, move);
+    if (App.mode === 'bots') { stepBots(); }
+    else if (App.mode === 'hotseat') { advanceHotseat(); }
+    else if (App.mode === 'online') { pushMyMove(move); render(); }
+  }
+
+  function stepBots() {
+    // bots commit, resolve, possibly multiple resolution cycles (leader draft)
+    render();
+    setTimeout(() => {
+      G.autoCommitBots(App.g);
+      if (G.allCommitted(App.g)) {
+        G.resolveTurn(App.g);
+        if (App.g.phase === 'finished') { show('score'); return; }
+      }
+      render();
+      // leader draft proceeds turn-by-turn; viewer always seat 0
+    }, 280);
+  }
+
+  // ---- hotseat ----
+  function beginHotseatTurn() {
+    // find first human seat without pending move
+    nextHotseatActor(true);
+  }
+  function nextHotseatActor(first) {
+    const g = App.g;
+    const seat = g.players.findIndex(p => !p.bot && !p.pendingMove);
+    if (seat === -1) {
+      // all humans committed -> bots, resolve
+      G.autoCommitBots(g);
+      if (G.allCommitted(g)) {
+        G.resolveTurn(g);
+        if (g.phase === 'finished') { show('score'); return; }
+      }
+      // start next round
+      nextHotseatActor(true);
+      return;
+    }
+    App.viewSeat = seat;
+    App.pendingPass = true;
+    show('pass');
+  }
+  function advanceHotseat() { nextHotseatActor(false); }
+
+  function renderPass(r) {
+    const g = App.g, p = g.players[App.viewSeat];
+    const wrap = el('div', 'passcard');
+    wrap.innerHTML = `
+      <div class="pass-inner">
+        <div class="eyebrow">Pass the device</div>
+        <h2>${escapeHtml(p.name)}</h2>
+        <p>${g.phase === 'leaderDraft' ? 'Leader draft round ' + g.leaderDraftRound : 'Age ' + ageLabel(g.age) + ' · turn ' + Math.min(g.turn, 6)}</p>
+        <button class="primary" id="ready">I’m ${escapeHtml(p.name)} — show my hand</button>
+      </div>`;
+    $('#ready', wrap).onclick = () => { App.pendingPass = false; show('game'); };
+    r.appendChild(wrap);
+  }
+
+  // ===== detail dialogs =====
+  function openCityDetail(p, idx) {
+    const host = $('#panelhost'); if (!host) return;
+    const sheet = el('div', 'sheet wide');
+    sheet.appendChild(el('div', 'sheet-title', escapeHtml(p.name) + ' — ' + escapeHtml(p.wonder.short)));
+    sheet.appendChild(wonderBoard(p, false));
+    sheet.appendChild(tableau(p, false));
+    const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
+    const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
+    host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
+  }
+  function openLog() {
+    const host = $('#panelhost'); if (!host) return;
+    const sheet = el('div', 'sheet wide');
+    sheet.appendChild(el('div', 'sheet-title', 'Game log'));
+    const log = el('div', 'logbox', App.g.log.slice(-40).reverse().map(l => `<div>${escapeHtml(l)}</div>`).join(''));
+    sheet.appendChild(log);
+    const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
+    const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
+    host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
+  }
+  function openMenu() {
+    const host = $('#panelhost'); if (!host) return;
+    const sheet = el('div', 'sheet');
+    sheet.appendChild(el('div', 'sheet-title', 'Menu'));
+    const acts = el('div', 'sheet-acts');
+    const b1 = el('button', 'act', '<span class="act-label">How to play</span><span class="act-sub">Quick rules reference</span>'); b1.onclick = () => { closePanel(); openRules(); };
+    const b2 = el('button', 'act', '<span class="act-label">Leave game</span><span class="act-sub">Return to the main menu</span>'); b2.onclick = () => { closePanel(); stopPolling(); show('home'); };
+    acts.appendChild(b1); acts.appendChild(b2); sheet.appendChild(acts);
+    const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
+    const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
+    host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
+  }
+  function openRules() {
+    const host = $('#panelhost'); if (!host) return;
+    const sheet = el('div', 'sheet wide');
+    sheet.innerHTML = `<div class="sheet-title">How to play</div>
+      <div class="rules">
+        <p>Each turn everyone secretly picks one card from their hand, then hands rotate. Over three ages you build a civilization.</p>
+        <p><b>Three things you can do with a card:</b> build it (pay its resource/coin cost), bury it under your Wonder to build the next stage (paying that stage’s cost), or discard it for 3 coins.</p>
+        <p><b>Resources</b> come from brown (raw) and grey (manufactured) cards plus your Wonder. Missing a resource? Buy it from a neighbor for 2 coins each (1 with the right trading post).</p>
+        <p><b>Colors:</b> blue = victory points, green = science (sets of three + squares of each symbol), red = military shields, yellow = commerce/coins, purple = guild bonuses (Age III).</p>
+        <p><b>Military</b> is compared with both neighbors at the end of each age: win for +1/+3/+5, lose for −1.</p>
+        <p><b>Chains:</b> some cards let you build a later card for free if you own the linked one.</p>
+        <p>Highest total score after Age III wins. Ties broken by coins.</p>
+      </div>`;
+    const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
+    const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
+    host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
+  }
+
+  // ===== SCORE =====
+  function renderScore(r) {
+    const g = App.g;
+    if (!g.results) G.finalScore(g);
+    const wrap = el('div', 'scorescreen');
+    const winner = g.results[0];
+    wrap.appendChild(el('div', 'eyebrow', 'The ages are complete'));
+    wrap.appendChild(el('h2', 'win', escapeHtml(winner.name) + ' wins'));
+    const tbl = el('table', 'scoretable');
+    tbl.innerHTML = `<thead><tr>
+        <th>#</th><th>City</th><th>Wonder</th>
+        <th>⚔</th><th>⊙</th><th>Wndr</th><th>Civ</th><th>Comm</th><th>Sci</th><th>Guild</th><th>Ldr</th><th>Total</th>
+      </tr></thead>`;
+    const tb = el('tbody');
+    g.results.forEach((res, i) => {
+      const b = res.breakdown;
+      const tr = el('tr', i === 0 ? 'first' : '');
+      tr.innerHTML = `<td>${i + 1}</td><td class="nm">${escapeHtml(res.name)}</td><td>${escapeHtml(res.wonder)}</td>
+        <td>${b.military}</td><td>${b.coins}</td><td>${b.wonder}</td><td>${b.civilian}</td><td>${b.commercial}</td><td>${b.science}</td><td>${b.guild}</td><td>${b.leaders}</td><td class="tot">${b.total}</td>`;
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb); wrap.appendChild(tbl);
+    const again = el('button', 'primary', 'Play again'); again.onclick = () => { stopPolling(); show('home'); };
+    wrap.appendChild(again);
+    r.appendChild(wrap);
+  }
+
+  // ============================================================
+  // ONLINE MULTIPLAYER (shared persistent storage)
+  // ============================================================
+  // Storage layer: uses Claude's window.storage when present (inside Claude),
+  // otherwise talks to the /api/store serverless endpoint (Vercel + Upstash Redis).
+  const NATIVE = (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function');
+  const API = '/api/store';
+  const Store = {
+    async get(key) {
+      const k = App.storageKeyPrefix + key;
+      if (NATIVE) { try { const r = await window.storage.get(k, true); return r ? JSON.parse(r.value) : null; } catch (e) { return null; } }
+      try { const res = await fetch(API + '?key=' + encodeURIComponent(k)); if (!res.ok) return null; const j = await res.json(); return j && j.value != null ? j.value : null; } catch (e) { return null; }
+    },
+    async set(key, val) {
+      const k = App.storageKeyPrefix + key;
+      if (NATIVE) { try { await window.storage.set(k, JSON.stringify(val), true); return true; } catch (e) { return false; } }
+      try { const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: k, value: val }) }); return res.ok; } catch (e) { return false; }
+    },
+    async del(key) {
+      const k = App.storageKeyPrefix + key;
+      if (NATIVE) { try { await window.storage.delete(k, true); } catch (e) { } return; }
+      try { await fetch(API + '?key=' + encodeURIComponent(k), { method: 'DELETE' }); } catch (e) { }
+    },
+  };
+  function hasStorage() {
+    if (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function') return true;
+    return location.protocol === 'http:' || location.protocol === 'https:'; // served -> API available
+  }
+  function code4() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 4; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
+  function myId() { if (!App._id) App._id = 'u' + Math.random().toString(36).slice(2, 8); return App._id; }
+
+  function openOnlineEntry() {
+    const r = rootEl(); r.innerHTML = '';
+    const wrap = el('div', 'setup online-entry');
+    if (!hasStorage()) {
+      wrap.innerHTML = `<button class="back">← back</button><h2>Online Room</h2>
+        <div class="warn">Online play needs the shared storage feature, which isn’t available here. You can still play vs bots or pass &amp; play.</div>`;
+      $('.back', wrap).onclick = () => show('home');
+      r.appendChild(wrap); return;
+    }
+    wrap.innerHTML = `
+      <button class="back">← back</button>
+      <h2>Online Room</h2>
+      <label class="field"><span>Your name</span><input id="oname" type="text" value="Player" maxlength="14"></label>
+      <button class="primary" id="create">Create a room</button>
+      <div class="or">or join one</div>
+      <label class="field"><span>Room code</span><input id="ocode" type="text" placeholder="ABCD" maxlength="4" style="text-transform:uppercase"></label>
+      <button class="secondary" id="join">Join room</button>
+      <div class="note">Share the 4-letter code. The room host starts and runs the game; empty seats fill with bots.</div>`;
+    $('.back', wrap).onclick = () => show('home');
+    $('#create', wrap).onclick = () => createRoom($('#oname', wrap).value.trim() || 'Host');
+    $('#join', wrap).onclick = () => joinRoom(($('#ocode', wrap).value || '').trim().toUpperCase(), $('#oname', wrap).value.trim() || 'Player');
+    r.appendChild(wrap);
+  }
+
+  async function createRoom(name) {
+    const code = code4();
+    const room = { code, host: myId(), started: false, leaders: false,
+      seats: [{ id: myId(), name, bot: false }], maxBotsTo: 4, updated: Date.now() };
+    await Store.set('room_' + code, room);
+    App.online = { code, isHost: true, seat: 0 };
+    App.room = room;
+    show('lobby');
+    startLobbyPoll();
+  }
+  async function joinRoom(code, name) {
+    if (!code || code.length !== 4) { toast('Enter a 4-letter room code.'); return; }
+    const room = await Store.get('room_' + code);
+    if (!room) { toast('No room found with that code.'); return; }
+    if (room.started) { toast('That game has already started.'); return; }
+    if (room.seats.length >= 7) { toast('That room is full.'); return; }
+    if (!room.seats.some(s => s.id === myId())) {
+      room.seats.push({ id: myId(), name, bot: false });
+      room.updated = Date.now();
+      await Store.set('room_' + code, room);
+    }
+    App.online = { code, isHost: room.host === myId(), seat: room.seats.findIndex(s => s.id === myId()) };
+    App.room = room;
+    show('lobby');
+    startLobbyPoll();
+  }
+
+  let lobbyTimer = null, gameTimer = null;
+  function startLobbyPoll() {
+    stopPolling();
+    lobbyTimer = setInterval(async () => {
+      const room = await Store.get('room_' + App.online.code);
+      if (!room) return;
+      App.room = room;
+      App.online.seat = room.seats.findIndex(s => s.id === myId());
+      if (room.started) { clearInterval(lobbyTimer); lobbyTimer = null; enterOnlineGame(); return; }
+      if (App.screen === 'lobby') render();
+    }, 2000);
+  }
+  function stopPolling() { if (lobbyTimer) { clearInterval(lobbyTimer); lobbyTimer = null; } if (gameTimer) { clearInterval(gameTimer); gameTimer = null; } }
+
+  function renderLobby(r) {
+    const room = App.room;
+    const wrap = el('div', 'lobby');
+    const isHost = App.online.isHost;
+    wrap.innerHTML = `
+      <button class="back">← leave</button>
+      <div class="eyebrow">Room</div>
+      <div class="roomcode">${room.code}</div>
+      <div class="lobby-sub">${isHost ? 'You are the host. Start when everyone’s in.' : 'Waiting for the host to start…'}</div>
+      <div class="seats">${room.seats.map((s, i) => `<div class="seat-chip ${s.id === myId() ? 'me' : ''}">${escapeHtml(s.name)}${s.id === room.host ? ' ♛' : ''}</div>`).join('')}</div>
+      ${isHost ? `
+        <label class="toggle"><input type="checkbox" id="lobleaders" ${room.leaders ? 'checked' : ''}><span>Leaders expansion</span></label>
+        <label class="field"><span>Fill empty seats with bots up to</span>
+          <div class="stepper"><button data-d="-1">−</button><b id="botto">${room.maxBotsTo}</b><button data-d="1">+</button></div></label>
+        <button class="primary" id="startroom">Start game</button>` : `<div class="dot-wait"><span class="dot"></span> live</div>`}
+    `;
+    $('.back', wrap).onclick = async () => { stopPolling(); show('home'); };
+    if (isHost) {
+      $('#lobleaders', wrap).onchange = async e => { App.room.leaders = e.target.checked; await Store.set('room_' + room.code, App.room); };
+      $$('.stepper button', wrap).forEach(b => b.onclick = async () => {
+        App.room.maxBotsTo = Math.max(App.room.seats.length, Math.min(7, App.room.maxBotsTo + (+b.dataset.d)));
+        $('#botto', wrap).textContent = App.room.maxBotsTo; await Store.set('room_' + room.code, App.room);
+      });
+      $('#startroom', wrap).onclick = startOnlineGame;
+    }
+    r.appendChild(wrap);
+  }
+
+  async function startOnlineGame() {
+    const room = App.room;
+    const seats = room.seats.slice();
+    let bi = seats.length + 1;
+    while (seats.length < room.maxBotsTo) seats.push({ id: 'bot' + bi, name: 'Bot ' + bi, bot: true }), bi++;
+    if (seats.length < 3) { while (seats.length < 3) seats.push({ id: 'bot' + bi, name: 'Bot ' + bi, bot: true }), bi++; }
+    const g = G.newGame({ seats, useLeaders: room.leaders });
+    room.started = true; room.seatOrder = seats.map(s => ({ id: s.id, name: s.name, bot: s.bot }));
+    room.updated = Date.now();
+    await Store.set('room_' + room.code, room);
+    await Store.set('game_' + room.code, g);
+    App.g = g;
+    enterOnlineGame();
+  }
+
+  async function enterOnlineGame() {
+    App.mode = 'online';
+    // load game
+    const g = await Store.get('game_' + App.online.code);
+    if (g) App.g = g;
+    App.online.seat = App.g.players.findIndex(p => p.id === myId());
+    if (App.online.seat < 0) App.online.seat = 0; // spectator fallback
+    App.viewSeat = App.online.seat;
+    show('game');
+    startGamePoll();
+  }
+
+  function startGamePoll() {
+    stopPolling();
+    gameTimer = setInterval(onlineTick, 2200);
+    onlineTick();
+  }
+
+  async function onlineTick() {
+    if (!App.online) return;
+    const code = App.online.code;
+    // 1) refresh game state
+    const remote = await Store.get('game_' + code);
+    if (remote && (!App.g || remote.version >= App.g.version)) {
+      const myPending = App.g && App.g.players[App.online.seat] ? App.g.players[App.online.seat].pendingMove : null;
+      App.g = remote;
+      // preserve our own pending visual if newer turn hasn't resolved
+      if (App.screen === 'game' && !closedPanelOpen()) render();
+    }
+    if (App.g && App.g.phase === 'finished') { stopPolling(); show('score'); return; }
+    // 2) if host, gather moves and resolve
+    if (App.online.isHost && App.g) await hostResolveIfReady();
+  }
+  function closedPanelOpen() { const h = $('#panelhost'); return h && h.classList.contains('open'); }
+
+  async function pushMyMove(move) {
+    if (!App.online) return;
+    const code = App.online.code;
+    const turnId = turnKey(App.g);
+    await Store.set('move_' + code + '_' + App.online.seat, { turnId, move, by: myId() });
+    // mark locally
+    if (App.g.players[App.online.seat]) App.g.players[App.online.seat].pendingMove = move;
+    // host resolves on its own tick; non-host just waits
+    if (App.online.isHost) await hostResolveIfReady();
+  }
+  function turnKey(g) { return g.phase + ':' + g.age + ':' + g.turn + ':' + (g.leaderDraftRound || 0); }
+
+  let hostBusy = false;
+  async function hostResolveIfReady() {
+    if (hostBusy) return; hostBusy = true;
+    try {
+      const code = App.online.code;
+      let g = await Store.get('game_' + code); if (!g) { return; }
+      const tk = turnKey(g);
+      // collect human moves
+      const humans = g.players.map((p, i) => ({ p, i })).filter(x => !x.p.bot);
+      let allIn = true;
+      for (const h of humans) {
+        if (h.p.pendingMove) continue;
+        const mv = await Store.get('move_' + code + '_' + h.i);
+        if (mv && mv.turnId === tk) { g.players[h.i].pendingMove = mv.move; }
+        else allIn = false;
+      }
+      // bots
+      G.autoCommitBots(g);
+      if (allIn && G.allCommitted(g)) {
+        G.resolveTurn(g);
+        // clear move keys for next turn
+        for (const h of humans) { await Store.del('move_' + code + '_' + h.i); }
+        await Store.set('game_' + code, g);
+        App.g = g;
+        App.online.seat = g.players.findIndex(p => p.id === myId());
+        if (App.screen === 'game' && !closedPanelOpen()) render();
+        if (g.phase === 'finished') { stopPolling(); show('score'); }
+      } else {
+        // persist partial pending (so others see who's locked)
+        await Store.set('game_' + code, g);
+        App.g = g;
+        if (App.screen === 'game' && !closedPanelOpen()) render();
+      }
+    } finally { hostBusy = false; }
+  }
+
+  // ===== misc =====
+  function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  let toastTimer;
+  function toast(msg) {
+    let t = $('#toast'); if (!t) { t = el('div'); t.id = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  // boot
+  window.addEventListener('DOMContentLoaded', () => { render(); });
+  window.SWUI = App;
+})();
+
+</script>
+</body>
+</html>

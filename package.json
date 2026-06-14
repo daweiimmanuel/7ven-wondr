@@ -1,0 +1,10 @@
+{
+  "name": "seven-wonders-online",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Seven Wonders board game (base + Leaders) with online multiplayer",
+  "dependencies": {
+    "@upstash/redis": "^1.34.0"
+  }
+}
