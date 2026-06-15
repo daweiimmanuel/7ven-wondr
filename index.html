@@ -126,6 +126,10 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 .seat-chip{padding:8px 14px; border-radius:99px; border:1px solid var(--line2);
   background:var(--panel2); font-size:14px; color:var(--ink-dim)}
 .seat-chip.me{border-color:var(--gold); color:var(--gold-bright); background:rgba(207,164,80,.12)}
+.seat-chip b{color:var(--gold-bright); font-weight:600}
+.seat-chip i{color:var(--ink-faint); font-style:italic}
+.wsel option:disabled{color:var(--ink-faint)}
+.pick-hint{font-size:12px; color:var(--ink-faint); font-style:italic; margin-top:-6px}
 .dot-wait{display:flex; align-items:center; gap:8px; justify-content:center; color:var(--ink-faint);
   font-size:13px; text-transform:uppercase; letter-spacing:.16em}
 .dot{width:8px; height:8px; border-radius:99px; background:var(--ok); display:inline-block;
@@ -378,6 +382,26 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 /* wonder board header with emblem */
 .wonder-head{display:flex; gap:11px; align-items:center; margin-bottom:12px}
 .wonder-head .wonder-sub{margin:2px 0 0}
+/* per-card details button (reliable tap target, esp. on mobile) */
+.hc-flags{align-items:center; flex-wrap:wrap}
+.hc-info{font-family:var(--body); font-size:11px; letter-spacing:.02em; color:var(--gold);
+  border:1px solid rgba(207,164,80,.45); background:rgba(207,164,80,.1); border-radius:99px;
+  padding:4px 9px; cursor:pointer; margin-left:auto; line-height:1; white-space:nowrap}
+.hc-info:hover{background:rgba(207,164,80,.2); border-color:var(--gold)}
+.hc-info:active{transform:translateY(1px)}
+/* hand: keep the leftmost card flush at the start */
+.hand{scroll-padding-left:2px}
+/* home: how-to-play entry */
+.home-learn{display:block; margin:0 auto; font-family:var(--disp); letter-spacing:.04em; font-size:14px;
+  color:var(--gold); background:rgba(207,164,80,.08); border:1px solid var(--bronze); border-radius:99px;
+  padding:11px 22px; transition:background .14s, border-color .14s}
+.home-learn:hover{background:rgba(207,164,80,.18); border-color:var(--gold)}
+/* detailed guide */
+.guide .rules h4{font-family:var(--disp); font-size:15px; font-weight:600; color:var(--gold-bright);
+  letter-spacing:.04em; margin:18px 0 6px; padding-top:12px; border-top:1px solid var(--line)}
+.guide .rules h4:first-child{border-top:none; padding-top:0; margin-top:2px}
+.guide .rules p .cdot{vertical-align:middle; margin-right:4px}
+.guide .rules p .emblem{vertical-align:middle; display:inline-block; margin:0 1px}
 
 /* ---------------- RESPONSIVE ---------------- */
 @media(max-width:680px){
@@ -397,6 +421,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 </head>
 <body>
 <div id="app"></div>
+<div id="panelhost" class="panel-host"></div>
 <script>
 /* ============================================================
    SEVEN WONDERS — Core Engine (pure, DOM-free, testable)
@@ -1473,7 +1498,9 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   function show(screen) { App.screen = screen; render(); }
 
   function render() {
-    const r = rootEl(); r.innerHTML = '';
+    const r = rootEl();
+    if (App._lastScreen !== App.screen) { closePanel(); App._lastScreen = App.screen; }
+    r.innerHTML = '';
     if (App.screen === 'home') return renderHome(r);
     if (App.screen === 'setup') return renderSetup(r);
     if (App.screen === 'lobby') return renderLobby(r);
@@ -1506,12 +1533,14 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         </button>
       </div>
       <div class="home-foot">Expansion: <b>Leaders</b> can be enabled in setup. 3–7 players.</div>
+      <button class="home-learn" id="learn">📖 New here? Read How to Play</button>
     `;
     $$('.mode-btn', wrap).forEach(b => b.onclick = () => {
       App.mode = b.dataset.mode;
       if (App.mode === 'online') openOnlineEntry();
       else show('setup');
     });
+    $('#learn', wrap).onclick = () => openGuide();
     r.appendChild(wrap);
   }
 
@@ -1645,9 +1674,11 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     }
 
     r.appendChild(wrap);
+    // always show the leftmost card first when the hand (re)renders
+    if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(() => { const h = $('.hand'); if (h) h.scrollLeft = 0; });
+    else { const h = $('.hand'); if (h) h.scrollLeft = 0; }
 
-    // detail/action panel host
-    const panel = el('div', 'panel-host'); panel.id = 'panelhost'; r.appendChild(panel);
+    // detail/action panel host is a persistent element in <body>
 
     $('#menubtn', wrap).onclick = openMenu;
     $('#logbtn', wrap).onclick = openLog;
@@ -1762,10 +1793,15 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         <div class="hc-cost">${card.cost && (card.cost.coins || Object.values(card.cost.res || {}).some(Boolean)) ? costHTML(card) : (card.leader ? '<span class="coin">' + (card.cost.coins || 0) + '</span>' : '<span class="free">free</span>')}</div>
         <div class="hc-eff">${card.leader ? escapeHtml(card.desc || '') : effectHTML(card)}</div>
         ${card.chainFrom ? `<div class="hc-chain">links from ${card.chainFrom.join('/')}</div>` : ''}
-        ${interactive ? `<div class="hc-flags">${canBuild ? '<i class="ok">build</i>' : '<i class="no">can\'t build</i>'}${canWonder ? '<i class="ok">wonder</i>' : ''}<i class="info">details ›</i></div>` : `<div class="hc-flags"><i class="info">tap for details ›</i></div>`}
+        <div class="hc-flags">
+          ${interactive ? `${canBuild ? '<i class="ok">build</i>' : '<i class="no">can\'t build</i>'}${canWonder ? '<i class="ok">wonder</i>' : ''}` : ''}
+          <button type="button" class="hc-info">ⓘ Details</button>
+        </div>
       `;
       if (interactive) cd.onclick = () => openActions(card, byUid[card.uid] || []);
       else { cd.classList.add('static'); cd.onclick = () => openCardInfo(card); }
+      const info = cd.querySelector('.hc-info');
+      if (info) info.onclick = (e) => { e.stopPropagation(); openCardInfo(card); };
       row.appendChild(cd);
     });
     return row;
@@ -1938,24 +1974,61 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
     host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
   }
-  function openRules() {
+  function openRules() { openGuide(); }
+  function openGuide() {
     const host = $('#panelhost'); if (!host) return;
-    const sheet = el('div', 'sheet wide');
-    sheet.innerHTML = `<div class="sheet-title">How to play</div>
+    const sheet = el('div', 'sheet wide guide');
+    const sci = (g) => emblemSVG('sci-' + g, EMBLEM_BG.green, 22);
+    sheet.innerHTML = `<div class="sheet-title">How to play Seven Wonders</div>
       <div class="rules">
-        <p>Each turn everyone secretly picks one card from their hand, then hands rotate. Over three ages you build a civilization.</p>
-        <p><b>Three things you can do with a card:</b> build it (pay its resource/coin cost), bury it under your Wonder to build the next stage (paying that stage’s cost), or discard it for 3 coins.</p>
-        <p><b>Resources</b> come from brown (raw) and grey (manufactured) cards plus your Wonder. Missing a resource? Buy it from a neighbor for 2 coins each (1 with the right trading post).</p>
-        <p><b>Colors:</b> blue = victory points, green = science (sets of three + squares of each symbol), red = military shields, yellow = commerce/coins, purple = guild bonuses (Age III).</p>
-        <p><b>Military</b> is compared with both neighbors at the end of each age: win for +1/+3/+5, lose for −1.</p>
-        <p><b>Chains:</b> some cards let you build a later card for free if you own the linked one.</p>
-        <p><b>Leaders (expansion):</b> if enabled, before the ages begin you draft characters — Caesar, Archimedes, Midas and others. A recruited leader stays in your city all game and grants a standing bonus: shields, a science symbol, coins, or victory points.</p>
-        <p><b>Learn any card:</b> tap a card in your hand, or any building already in a city, to see an illustrated summary of exactly what it does.</p>
-        <p>Highest total score after Age III wins. Ties broken by coins.</p>
+        <h4>The goal</h4>
+        <p>Build the most impressive city over three ages. When the dust settles you add up victory points from every source — the highest total wins (ties broken by coins in your treasury).</p>
+
+        <h4>How a turn works</h4>
+        <p>Everyone is dealt a hand of 7 cards. <b>At the same time</b>, each player secretly chooses one card to play, reveals it, then passes the rest of their hand to a neighbor. You keep doing this until only the last cards remain. That repeats for Age I, Age II, and Age III.</p>
+        <p>Hands pass <b>left in Ages I and III, and right in Age II</b>, so you alternate which neighbor you feed cards to.</p>
+
+        <h4>Three things you can do with your chosen card</h4>
+        <p><b>1 · Build it.</b> Pay its cost (resources shown top-left, or a coin number) and the card goes into your city, giving its benefit immediately or at game end.</p>
+        <p><b>2 · Bury it under your Wonder.</b> Instead of building the card's face, slide it under your Wonder board to construct the next Wonder stage — you pay that stage's cost (not the card's) and gain the stage's reward. Each Wonder has stages worth points and special powers.</p>
+        <p><b>3 · Discard it for 3 coins.</b> Can't use a card? Sell it to the bank for 3 coins.</p>
+
+        <h4>Resources &amp; trading</h4>
+        <p>You build cards by spending resources. <b>Brown</b> cards make raw materials (wood, stone, clay, ore); <b>grey</b> cards make manufactured goods (glass, papyrus, loom). Your Wonder also gives one free resource every turn.</p>
+        <p>Short a resource? You may <b>buy it from a neighbor</b> who produces it — 2 coins each (or 1 with the matching trading post). You never use up their resource; you just pay to borrow its production this turn.</p>
+
+        <h4>The seven card colors</h4>
+        <p><span class="cdot" data-col="brown">B</span> <b>Brown — raw materials.</b> Produce wood/stone/clay/ore.</p>
+        <p><span class="cdot" data-col="grey">G</span> <b>Grey — manufactured goods.</b> Produce glass/papyrus/loom.</p>
+        <p><span class="cdot" data-col="blue">C</span> <b>Blue — civilian.</b> Straight victory points. The safe, reliable path.</p>
+        <p><span class="cdot" data-col="yellow">Y</span> <b>Yellow — commercial.</b> Coins, trade discounts, and some end-game points.</p>
+        <p><span class="cdot" data-col="red">R</span> <b>Red — military.</b> Each gives shields. (More below.)</p>
+        <p><span class="cdot" data-col="green">S</span> <b>Green — science.</b> Three symbols ${sci('compass')} ${sci('gear')} ${sci('tablet')}. (Scoring below.)</p>
+        <p><span class="cdot" data-col="purple">P</span> <b>Purple — guilds.</b> Appear only in Age III; each scores points for a specific thing at game end.</p>
+
+        <h4>Military ⚔</h4>
+        <p>At the <b>end of each age</b> your shields are compared with your left neighbor and your right neighbor separately. Win a comparison and you gain a victory token worth <b>+1 in Age I, +3 in Age II, +5 in Age III</b>. Lose and you take a −1 defeat token. A tie scores nothing. You never need to "use up" shields — they simply total up each age.</p>
+
+        <h4>Science 🔬</h4>
+        <p>Collect the three symbols — compass ${sci('compass')}, gear ${sci('gear')}, tablet ${sci('tablet')}. Scoring rewards both depth and variety:</p>
+        <p>• Each symbol scores the <b>square</b> of how many you own (three gears = 3×3 = 9).<br>• Every <b>complete set</b> of all three different symbols is worth an extra <b>7</b> points.</p>
+        <p>So spreading across all three is usually stronger than piling into one. A few cards and leaders give a "wild" symbol that counts as whichever helps most.</p>
+
+        <h4>Wonders</h4>
+        <p>Your Wonder (your "nation") gives a free resource each turn and has three stages you build by burying cards. Stages give big points and unique powers — extra coins, a free build each age, a wild science symbol, and so on. You can pick your Wonder at the start, or leave it random.</p>
+
+        <h4>Leaders (optional expansion)</h4>
+        <p>If enabled, before the ages you draft famous characters (Caesar, Archimedes, Midas…). You'll pay coins to recruit one onto the table during the ages, and it grants a permanent bonus — shields, a science symbol, coins, or victory points. Tap any leader to see exactly what it does.</p>
+
+        <h4>Learn any card as you play</h4>
+        <p>Tap a card in your hand (or the <b>ⓘ Details</b> button on it), or tap any building already in a city, to see an illustrated explanation of what it does. Nothing is hidden — explore freely.</p>
+
+        <h4>Winning</h4>
+        <p>After Age III, points are totalled from: military, treasury (1 point per 3 coins), Wonder stages, blue civilian cards, yellow commercial bonuses, science, guilds, and any leaders. Highest total wins; ties go to whoever has more coins.</p>
       </div>`;
-    const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
+    const cancel = el('button', 'sheet-cancel', 'Got it'); cancel.onclick = closePanel; sheet.appendChild(cancel);
     const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
-    host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
+    host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
   }
 
   // ===== SCORE =====
@@ -2066,11 +2139,52 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   }
 
   let lobbyTimer = null, gameTimer = null;
+  // each player writes only their own pick key; the host folds picks into the room (unique, earliest-claim-wins)
+  async function mergePicks(room) {
+    let changed = false;
+    const picks = [];
+    for (const s of room.seats) {
+      if (s.bot) continue;
+      const p = await Store.get('pick_' + room.code + '_' + s.id);
+      if (p === null || p === undefined) { picks.push({ s, has: false }); continue; }
+      const w = (p && typeof p === 'object') ? (p.w || '') : (p || ''); // '' = random
+      const t = (p && typeof p === 'object' && p.t) ? p.t : 0;
+      picks.push({ s, has: true, w: w || null, t });
+    }
+    // resolve collisions: earliest timestamp keeps the wonder, later claimants get bumped
+    const claimants = picks.filter(x => x.has && x.w).sort((a, b) => a.t - b.t);
+    const used = new Set(); const winner = new Map();
+    for (const c of claimants) {
+      if (!used.has(c.w)) { used.add(c.w); winner.set(c.s.id, c.w); }
+      else winner.set(c.s.id, null); // bumped
+    }
+    for (const x of picks) {
+      if (!x.has) continue;
+      const w = !x.w ? null : (winner.get(x.s.id) || null);
+      if (x.w && w === null) await Store.set('pick_' + room.code + '_' + x.s.id, { w: '', t: Date.now() }); // reset bumped pick to Random
+      if (x.s.wonder !== w) { x.s.wonder = w; changed = true; }
+    }
+    return changed;
+  }
   function startLobbyPoll() {
     stopPolling();
     lobbyTimer = setInterval(async () => {
       const room = await Store.get('room_' + App.online.code);
       if (!room) return;
+      if (App.online.isHost) {
+        const changed = await mergePicks(room);
+        if (changed) { room.updated = Date.now(); await Store.set('room_' + room.code, room); }
+      }
+      // detect if my own pick was bumped by an earlier claim, so I can choose again
+      if (App.online.myWonder) {
+        const meSeat = room.seats.find(s => s.id === myId());
+        const mine = App.online.myWonder;
+        const takenByOther = room.seats.some(s => s.id !== myId() && s.wonder === mine);
+        if (meSeat && meSeat.wonder !== mine && takenByOther) {
+          App.online.myWonder = null;
+          toast(mine + ' was taken — please pick another wonder.');
+        }
+      }
       App.room = room;
       App.online.seat = room.seats.findIndex(s => s.id === myId());
       if (room.started) { clearInterval(lobbyTimer); lobbyTimer = null; enterOnlineGame(); return; }
@@ -2083,20 +2197,35 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     const room = App.room;
     const wrap = el('div', 'lobby');
     const isHost = App.online.isHost;
+    // my current choice (prefer local cache so it doesn't flicker before the host merges)
+    const meIdx = room.seats.findIndex(s => s.id === myId());
+    const myW = (App.online.myWonder !== undefined && App.online.myWonder !== null && App.online.myWonder !== '')
+      ? App.online.myWonder
+      : (meIdx >= 0 ? room.seats[meIdx].wonder : null);
+    // wonders already claimed by OTHER players -> shown as taken
+    const takenBy = {};
+    room.seats.forEach(s => { if (s.wonder && s.id !== myId()) takenBy[s.wonder] = s.name; });
+    const options = SW.WONDERS.map(w => {
+      const taken = takenBy[w.short];
+      if (taken && myW !== w.short) return `<option value="${w.short}" disabled>${w.short} — taken by ${escapeHtml(taken)}</option>`;
+      return `<option value="${w.short}" ${myW === w.short ? 'selected' : ''}>${w.short}</option>`;
+    }).join('');
+    const anyTaken = Object.keys(takenBy).length > 0;
     wrap.innerHTML = `
       <button class="back">← leave</button>
       <div class="eyebrow">Room</div>
       <div class="roomcode">${room.code}</div>
       <div class="lobby-sub">${isHost ? 'You are the host. Start when everyone’s in.' : 'Waiting for the host to start…'}</div>
-      <div class="seats">${room.seats.map((s, i) => `<div class="seat-chip ${s.id === myId() ? 'me' : ''}">${escapeHtml(s.name)}${s.wonder ? ' · ' + s.wonder : ''}${s.id === room.host ? ' ♛' : ''}</div>`).join('')}</div>
+      <div class="seats">${room.seats.map((s) => `<div class="seat-chip ${s.id === myId() ? 'me' : ''}">${escapeHtml(s.name)}${s.wonder ? ' · <b>' + s.wonder + '</b>' : ' · <i>choosing…</i>'}${s.id === room.host ? ' ♛' : ''}</div>`).join('')}</div>
       <label class="field"><span>Your wonder</span>
         <span class="row-wonder">
           <span class="rw-emblem" id="mywemblem"></span>
           <select class="wsel" id="mywonder">
-            <option value="">Random</option>
-            ${SW.WONDERS.map(w => `<option value="${w.short}">${w.short}</option>`).join('')}
+            <option value="" ${!myW ? 'selected' : ''}>Random</option>
+            ${options}
           </select>
         </span></label>
+      ${anyTaken ? '<div class="pick-hint">Greyed-out wonders are already taken — pick a free one.</div>' : ''}
       ${isHost ? `
         <label class="toggle"><input type="checkbox" id="lobleaders" ${room.leaders ? 'checked' : ''}><span>Leaders expansion</span></label>
         <label class="field"><span>Fill empty seats with bots up to</span>
@@ -2104,19 +2233,16 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         <button class="primary" id="startroom">Start game</button>` : `<div class="dot-wait"><span class="dot"></span> live</div>`}
     `;
     $('.back', wrap).onclick = async () => { stopPolling(); show('home'); };
-    // per-player wonder choice (everyone)
-    const meIdx = room.seats.findIndex(s => s.id === myId());
-    const myW = meIdx >= 0 ? room.seats[meIdx].wonder : null;
-    const mySel = $('#mywonder', wrap); if (mySel && myW) mySel.value = myW;
+    const mySel = $('#mywonder', wrap);
     const myEmblemHost = $('#mywemblem', wrap); if (myEmblemHost) myEmblemHost.innerHTML = myW ? wonderEmblem(myW, 32) : placeholderEmblem(32);
     if (mySel) mySel.onchange = async () => {
-      const val = mySel.value || null;
-      const r2 = App.room; const idx = r2.seats.findIndex(s => s.id === myId());
-      if (idx < 0) return;
-      if (val) r2.seats.forEach((s, j) => { if (j !== idx && s.wonder === val) s.wonder = null; });
-      r2.seats[idx].wonder = val; r2.updated = Date.now();
-      await Store.set('room_' + r2.code, r2);
-      render();
+      const val = mySel.value || ''; // '' = Random
+      App.online.myWonder = val; // remember my own choice locally
+      // write ONLY my own pick key, timestamped so the earliest claim wins a tie
+      await Store.set('pick_' + App.online.code + '_' + myId(), { w: val, t: Date.now() });
+      const idx = App.room.seats.findIndex(s => s.id === myId());
+      if (idx >= 0) App.room.seats[idx].wonder = val || null; // optimistic local display
+      if (myEmblemHost) myEmblemHost.innerHTML = val ? wonderEmblem(val, 32) : placeholderEmblem(32);
     };
     if (isHost) {
       $('#lobleaders', wrap).onchange = async e => { App.room.leaders = e.target.checked; await Store.set('room_' + room.code, App.room); };
@@ -2131,6 +2257,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 
   async function startOnlineGame() {
     const room = App.room;
+    await mergePicks(room); // pull in everyone's latest wonder choice
     const seats = room.seats.slice();
     let bi = seats.length + 1;
     while (seats.length < room.maxBotsTo) seats.push({ id: 'bot' + bi, name: 'Bot ' + bi, bot: true }), bi++;
