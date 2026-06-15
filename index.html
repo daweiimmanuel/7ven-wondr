@@ -344,11 +344,48 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   transition:opacity .2s, transform .2s; box-shadow:0 10px 30px rgba(0,0,0,.5)}
 #toast.show{opacity:1; transform:translate(-50%,0)}
 
+/* ---------------- EMBLEMS & NEW FEATURE STYLES ---------------- */
+.c-leader{--cardbg:var(--gold)}
+.emblem{display:block; flex:none; border-radius:12px}
+.hc-head{display:flex; align-items:center; gap:8px}
+.hc-head .emblem{border-radius:8px}
+.hc-flags i.info{color:var(--gold); border:1px solid rgba(207,164,80,.4); background:rgba(207,164,80,.08)}
+/* action sheet card now hosts emblem + body */
+.sheet-card{display:flex; gap:13px; align-items:flex-start}
+.sc-emblem{flex:none}
+.sc-body{flex:1; min-width:0}
+.sc-label{font-family:var(--disp); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:2px}
+.sc-desc{font-size:12.5px; color:var(--ink-dim); margin-top:5px; line-height:1.5}
+/* read-only card info sheet */
+.card-info{display:flex; gap:14px; align-items:center; padding:2px 2px 4px}
+.ci-emblem{flex:none}
+.ci-label{font-family:var(--disp); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold)}
+.ci-name{font-family:var(--disp); font-size:21px; font-weight:600; color:var(--ink); line-height:1.1; margin-top:3px}
+.ci-costline{display:flex; align-items:center; gap:12px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:11px 2px; margin:4px 0}
+.ci-costline>span{font-family:var(--disp); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint)}
+.ci-cost{display:flex; gap:5px; flex-wrap:wrap; align-items:center}
+.ci-costnote{color:var(--ink-faint); font-size:12px; font-style:italic}
+.ci-desc{font-size:14px; color:var(--ink-dim); line-height:1.65; padding:2px 2px 4px}
+/* setup + lobby nation picker */
+.row-wonder{display:flex; align-items:center; gap:7px; flex:none}
+.rw-emblem{flex:none; line-height:0}
+.wsel{background:var(--bg2); color:var(--ink); border:1px solid var(--line2); border-radius:var(--r-sm);
+  padding:8px 9px; font-family:var(--body); font-size:13.5px; max-width:130px}
+.wsel:focus{border-color:var(--gold); outline:none}
+/* leader explainer */
+.leader-note{font-size:12.5px; color:var(--ink-dim); background:rgba(207,164,80,.08);
+  border:1px solid var(--bronze); border-radius:var(--r-sm); padding:9px 12px; line-height:1.5; font-style:italic}
+/* wonder board header with emblem */
+.wonder-head{display:flex; gap:11px; align-items:center; margin-bottom:12px}
+.wonder-head .wonder-sub{margin:2px 0 0}
+
 /* ---------------- RESPONSIVE ---------------- */
 @media(max-width:680px){
   #app{padding:14px 12px 40px}
   .home-modes{grid-template-columns:1fr}
   .myarea{grid-template-columns:1fr}
+  .name-row{flex-wrap:wrap}
+  .name-row input{flex:1 1 100%; order:3}
   .opponents{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .topbar{gap:8px} .turn-info{order:3; flex-basis:100%; text-align:left}
   .home-hero h1{letter-spacing:.04em}
@@ -898,10 +935,17 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     const seats = opts.seats;
     const n = seats.length;
     const wpool = SW.shuffle(SW.WONDERS.slice());
+    const used = new Set();
+    function pickWonder(choice) {
+      if (choice) {
+        const w = SW.WONDERS.find(x => x.short === choice || x.name === choice);
+        if (w && !used.has(w.short)) { used.add(w.short); return w; }
+      }
+      for (const w of wpool) { if (!used.has(w.short)) { used.add(w.short); return w; } }
+      return wpool[0];
+    }
     const players = seats.map((s, i) => {
-      const w = opts.wonders && opts.wonders[i]
-        ? SW.WONDERS.find(x => x.short === opts.wonders[i])
-        : wpool[i % wpool.length];
+      const w = pickWonder(opts.wonders && opts.wonders[i]);
       return {
         id: s.id, name: s.name, bot: !!s.bot, seat: i,
         wonder: w, built: [], stagesBuilt: [], coins: 3,
@@ -1311,6 +1355,106 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     return out.join(' ');
   }
 
+  // ---------- emblems (original SVG art that signals each card's function) ----------
+  function star(cx, cy, r, fill) {
+    let pts = '';
+    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5; const rr = i % 2 ? r * 0.45 : r; pts += (cx + rr * Math.cos(a)).toFixed(1) + ',' + (cy + rr * Math.sin(a)).toFixed(1) + ' '; }
+    return `<polygon points="${pts.trim()}" fill="${fill}"/>`;
+  }
+  const EMBLEM_BG = { brown: '#7c4a2d', grey: '#6f757e', blue: '#2f6fb0', yellow: '#bd8a1e', red: '#b5362c', green: '#2e8b57', purple: '#7a4ea3', leader: '#b9893c' };
+  function emblemSVG(glyph, bg, size) {
+    const s = size || 56, FG = '#f3e9d2';
+    const G = {
+      'res-wood': `<g fill="${FG}"><ellipse cx="32" cy="25" rx="17" ry="6.5"/><ellipse cx="32" cy="39" rx="17" ry="6.5"/></g><g fill="${bg}"><circle cx="21" cy="25" r="2.4"/><circle cx="21" cy="39" r="2.4"/></g>`,
+      'res-stone': `<g fill="${FG}"><rect x="13" y="22" width="17" height="9" rx="1.5"/><rect x="34" y="22" width="17" height="9" rx="1.5"/><rect x="23" y="33" width="18" height="9" rx="1.5"/></g>`,
+      'res-clay': `<rect x="19" y="19" width="26" height="5" rx="2.5" fill="${FG}"/><path d="M22 24 h20 l-2.5 17 a7.5 7 0 0 1 -15 0 z" fill="${FG}"/>`,
+      'res-ore': `<g fill="${FG}"><path d="M32 15 l11 22 -22 0 z"/></g><g fill="${FG}" opacity=".8"><path d="M19 27 l7 14 -14 0 z"/><path d="M45 27 l7 14 -14 0 z"/></g>`,
+      'res-glass': `<path d="M32 13 L47 28 L32 51 L17 28 Z" fill="${FG}"/><path d="M17 28 H47 M32 13 V51" stroke="${bg}" stroke-width="1.6" fill="none" opacity=".55"/>`,
+      'res-papyrus': `<rect x="15" y="19" width="34" height="26" rx="3" fill="${FG}"/><g stroke="${bg}" stroke-width="2.4" stroke-linecap="round"><line x1="22" y1="27" x2="42" y2="27"/><line x1="22" y1="32" x2="42" y2="32"/><line x1="22" y1="37" x2="35" y2="37"/></g>`,
+      'res-loom': `<rect x="19" y="15" width="26" height="5" rx="2" fill="${FG}"/><rect x="19" y="44" width="26" height="5" rx="2" fill="${FG}"/><g stroke="${FG}" stroke-width="3"><line x1="26" y1="19" x2="26" y2="45"/><line x1="32" y1="19" x2="32" y2="45"/><line x1="38" y1="19" x2="38" y2="45"/></g>`,
+      'column': `<rect x="19" y="15" width="26" height="5" rx="1.5" fill="${FG}"/><rect x="21" y="44" width="22" height="6" rx="1.5" fill="${FG}"/><g fill="${FG}"><rect x="23" y="20" width="4.5" height="24"/><rect x="29.75" y="20" width="4.5" height="24"/><rect x="36.5" y="20" width="4.5" height="24"/></g>`,
+      'coin': `<circle cx="32" cy="32" r="16" fill="${FG}"/><circle cx="32" cy="32" r="9" fill="none" stroke="${bg}" stroke-width="2.6"/><circle cx="32" cy="32" r="3" fill="${bg}"/>`,
+      'scales': `<g stroke="${FG}" stroke-width="2.6" fill="none" stroke-linecap="round"><line x1="32" y1="15" x2="32" y2="45"/><line x1="17" y1="22" x2="47" y2="22"/><path d="M17 22 l-5 9 a7 4 0 0 0 10 0 z"/><path d="M47 22 l-5 9 a7 4 0 0 0 10 0 z"/></g><rect x="24" y="45" width="16" height="4" rx="2" fill="${FG}"/><circle cx="32" cy="15" r="3" fill="${FG}"/>`,
+      'shield': `<path d="M32 13 L48 19 V33 C48 41 40 47 32 50 C24 47 16 41 16 33 V19 Z" fill="${FG}"/><path d="M32 21 V41 M23 30 H41" stroke="${bg}" stroke-width="3.2" stroke-linecap="round"/>`,
+      'sci-compass': `<g stroke="${FG}" stroke-width="3.2" fill="none" stroke-linecap="round"><circle cx="32" cy="18" r="3.2"/><line x1="31" y1="20.5" x2="23" y2="46"/><line x1="33" y1="20.5" x2="41" y2="46"/></g>`,
+      'sci-gear': `<circle cx="32" cy="32" r="15" fill="none" stroke="${FG}" stroke-width="6" stroke-dasharray="5.2 4.4"/><circle cx="32" cy="32" r="9" fill="${FG}"/><circle cx="32" cy="32" r="4" fill="${bg}"/>`,
+      'sci-tablet': `<rect x="18" y="14" width="28" height="36" rx="3" fill="${FG}"/><g stroke="${bg}" stroke-width="2.6" stroke-linecap="round"><line x1="24" y1="23" x2="40" y2="23"/><line x1="24" y1="29" x2="40" y2="29"/><line x1="24" y1="35" x2="40" y2="35"/><line x1="24" y1="41" x2="34" y2="41"/></g>`,
+      'laurel': `<g fill="none" stroke="${FG}" stroke-width="3" stroke-linecap="round"><path d="M25 49 C13 41 14 24 27 17"/><path d="M39 49 C51 41 50 24 37 17"/></g>${star(32, 33, 9, FG)}`,
+      'wonder': `<path d="M14 47 L32 17 L50 47 Z" fill="${FG}"/><path d="M23 47 L32 32 L41 47 Z" fill="${bg}"/>`,
+      'star': star(32, 32, 13, FG),
+    };
+    const inner = G[glyph] || G['star'];
+    return `<svg class="emblem" viewBox="0 0 64 64" width="${s}" height="${s}" role="img" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="${bg}"/><rect x="2" y="2" width="60" height="60" rx="14" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>${inner}</svg>`;
+  }
+  function glyphFor(card) {
+    if (card.leader) {
+      const e = card.effect || {};
+      if (e.shields) return 'shield';
+      if (e.scienceWild || e.science || e.vpScienceSet) return 'sci-tablet';
+      if (e.coins) return 'coin';
+      if (e.wonderDiscount || e.vpPerStage) return 'wonder';
+      return 'laurel';
+    }
+    if (card.color === 'brown' || card.color === 'grey') {
+      const r = card.produce ? Object.keys(card.produce)[0] : (card.choice ? Object.keys(card.choice[0])[0] : 'wood');
+      return 'res-' + r;
+    }
+    if (card.color === 'blue') return 'column';
+    if (card.color === 'yellow') return (card.effect && card.effect.trade) ? 'scales' : 'coin';
+    if (card.color === 'red') return 'shield';
+    if (card.color === 'green') return 'sci-' + (card.science || 'gear');
+    if (card.color === 'purple') return 'laurel';
+    return 'star';
+  }
+  function cardEmblem(card, size) { return emblemSVG(glyphFor(card), card.leader ? EMBLEM_BG.leader : (EMBLEM_BG[card.color] || '#555'), size); }
+
+  const WBG = '#241d14';
+  function wonderEmblem(short, size) {
+    const s = size || 56, FG = '#cfa450';
+    const W = {
+      Giza: `<path d="M10 50 L32 14 L54 50 Z" fill="${FG}"/><path d="M32 14 L32 50" stroke="${WBG}" stroke-width="1.5"/>`,
+      Rhodes: `<g fill="${FG}"><circle cx="32" cy="16" r="5"/><rect x="29" y="21" width="6" height="18" rx="2"/><rect x="19" y="24" width="11" height="4" rx="2"/><rect x="34" y="24" width="11" height="4" rx="2"/><rect x="27" y="39" width="4" height="13"/><rect x="33" y="39" width="4" height="13"/></g>`,
+      Alexandria: `<g fill="${FG}"><circle cx="32" cy="12" r="4"/><path d="M27 16 h10 l-2 9 h-6 z"/><path d="M25 25 h14 l-2 23 h-10 z"/></g><rect x="21" y="48" width="22" height="4" fill="${FG}"/>`,
+      Ephesus: `<rect x="15" y="44" width="34" height="5" fill="${FG}"/><g fill="${FG}"><rect x="20" y="25" width="4" height="19"/><rect x="30" y="25" width="4" height="19"/><rect x="40" y="25" width="4" height="19"/></g><path d="M13 25 L32 13 L51 25 Z" fill="${FG}"/>`,
+      Babylon: `<g fill="${FG}"><rect x="16" y="40" width="32" height="8"/><rect x="20" y="31" width="24" height="8"/><rect x="24" y="22" width="16" height="8"/></g><g fill="${WBG}"><circle cx="22" cy="40" r="1.6"/><circle cx="30" cy="31" r="1.6"/><circle cx="38" cy="40" r="1.6"/></g>`,
+      Olympia: `<rect x="15" y="44" width="34" height="5" fill="${FG}"/><g fill="${FG}"><rect x="20" y="27" width="4" height="17"/><rect x="30" y="27" width="4" height="17"/><rect x="40" y="27" width="4" height="17"/></g><rect x="15" y="22" width="34" height="5" fill="${FG}"/>${star(32, 14, 6, FG)}`,
+      Halicarnassus: `<g fill="${FG}"><rect x="18" y="42" width="28" height="7"/><rect x="22" y="30" width="20" height="4"/><rect x="24" y="34" width="3" height="8"/><rect x="30.5" y="34" width="3" height="8"/><rect x="37" y="34" width="3" height="8"/><path d="M20 30 L32 17 L44 30 Z"/></g>`,
+    };
+    const inner = W[short] || star(32, 32, 12, FG);
+    return `<svg class="emblem" viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="12" fill="${WBG}"/><rect x="2" y="2" width="60" height="60" rx="12" fill="none" stroke="rgba(207,164,80,.35)" stroke-width="1.5"/>${inner}</svg>`;
+  }
+  function placeholderEmblem(size) {
+    const s = size || 56;
+    return `<svg class="emblem" viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="12" fill="#1c160e"/><rect x="2" y="2" width="60" height="60" rx="12" fill="none" stroke="rgba(207,164,80,.25)" stroke-width="1.5" stroke-dasharray="4 4"/><text x="32" y="43" text-anchor="middle" font-size="30" fill="#cfa450" font-family="Cinzel,serif">?</text></svg>`;
+  }
+
+  // ---------- plain-language card descriptions (generated from effects) ----------
+  const COLOR_LABEL = { brown: 'Raw material', grey: 'Manufactured good', blue: 'Civilian — victory points', yellow: 'Commercial', red: 'Military', green: 'Science', purple: 'Guild' };
+  const RES_NAME = { wood: 'Wood', stone: 'Stone', clay: 'Clay', ore: 'Ore', glass: 'Glass', papyrus: 'Papyrus', loom: 'Loom' };
+  function describe(card) {
+    if (card.leader) return card.desc || 'A leader with a special ability you keep all game.';
+    const parts = [];
+    if (card.produce) { const ps = SW.RES.filter(r => card.produce[r]).map(r => card.produce[r] + ' ' + RES_NAME[r]); parts.push('Produces ' + ps.join(' and ') + ' every turn, used to build cards and to trade.'); }
+    if (card.choice) { const o = card.choice.map(x => RES_NAME[Object.keys(x)[0]]); parts.push('Each turn produces one resource of your choice: ' + o.join(', ') + '.'); }
+    if (card.vp) parts.push('Worth ' + card.vp + ' victory points at the end of the game.');
+    if (card.shields) parts.push('Adds ' + card.shields + ' military shield' + (card.shields > 1 ? 's' : '') + '. Shields are compared with both neighbors at the end of each age.');
+    if (card.science) { const n = { compass: 'Compass', gear: 'Gear', tablet: 'Tablet' }[card.science]; parts.push('Provides a ' + n + ' science symbol. Score the square of each symbol you collect, plus 7 points for every complete set of all three.'); }
+    if (card.coins) parts.push('Gain ' + card.coins + ' coins immediately when built.');
+    const e = card.effect || {};
+    if (e.trade) { const k = e.trade.kind === 'raw' ? 'raw materials (brown cards)' : 'manufactured goods (grey cards)'; const side = e.trade.side === 'both' ? 'either neighbor' : (e.trade.side === 'left' ? 'your left neighbor' : 'your right neighbor'); parts.push('Buy ' + k + ' from ' + side + ' for 1 coin each instead of 2.'); }
+    if (e.coinPer) { const c = e.coinPer; const who = c.scope === 'all' ? 'you and both neighbors own' : (c.scope === 'neighbors' ? 'your neighbors own' : 'you own'); parts.push('When built, gain ' + c.coins + ' coin' + (c.coins > 1 ? 's' : '') + ' for each ' + c.color + ' card ' + who + '.'); }
+    if (e.coinVpPer) { const c = e.coinVpPer; parts.push('Gain ' + c.coins + ' coin' + (c.coins > 1 ? 's' : '') + ' now, and ' + c.vp + ' victory point' + (c.vp > 1 ? 's' : '') + ' at game end, for each ' + c.color + ' card in your own city.'); }
+    if (e.coinVpPerStage) parts.push('Gain ' + e.coinVpPerStage.coins + ' coins now and ' + e.coinVpPerStage.vp + ' victory point per Wonder stage you have built.');
+    if (e.vpPer) { const c = e.vpPer; const cols = Array.isArray(c.color) ? c.color.join('/') : c.color; const who = c.scope === 'neighbors' ? 'each neighbor city' : (c.scope === 'self' ? 'your own city' : 'you and your neighbors'); parts.push('At game end, ' + c.vp + ' victory point' + (c.vp > 1 ? 's' : '') + ' for each ' + cols + ' card in ' + who + '.'); }
+    if (e.vpPerDefeat) parts.push('At game end, 1 victory point for each military defeat token your two neighbors hold.');
+    if (e.vpPerStage) { const who = e.vpPerStage.scope === 'selfNeighbors' ? 'you and both neighbors have' : 'you have'; parts.push('At game end, 1 victory point for each Wonder stage ' + who + ' built.'); }
+    if (e.scienceWild) parts.push('Counts as any one science symbol of your choice when scoring.');
+    if (card.color === 'purple' && !parts.length) parts.push('A guild that scores victory points at the end of the game.');
+    if (card.chainFrom && card.chainFrom.length) parts.push('Free to build if you already own ' + card.chainFrom.join(' or ') + '.');
+    if (card.chainTo && card.chainTo.length) parts.push('Owning this lets you later build ' + card.chainTo.join(' or ') + ' for free.');
+    return parts.join(' ');
+  }
+
   // ---------- app state ----------
   const App = {
     screen: 'home',
@@ -1372,7 +1516,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   }
 
   // ===== SETUP (bots / hotseat) =====
-  const SetupState = { count: 4, leaders: false, names: ['You', 'Bot 2', 'Bot 3', 'Bot 4', 'Bot 5', 'Bot 6', 'Bot 7'] };
+  const SetupState = { count: 4, leaders: false, names: ['You', 'Bot 2', 'Bot 3', 'Bot 4', 'Bot 5', 'Bot 6', 'Bot 7'], wonders: [null, null, null, null, null, null, null] };
   function renderSetup(r) {
     const isHot = App.mode === 'hotseat';
     if (isHot) SetupState.names = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7'];
@@ -1387,7 +1531,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       </label>
       <div id="names" class="names"></div>
       <label class="toggle"><input type="checkbox" id="lead" ${SetupState.leaders ? 'checked' : ''}><span>Leaders expansion</span>
-        <small>Draft a leader for your city before the ages begin.</small></label>
+        <small>Draft powerful characters before the ages begin. Each leader you recruit stays in your city all game and grants a permanent bonus — shields, science, coins, or victory points.</small></label>
       <button class="primary" id="start">Begin the ages</button>
     `;
     $('.back', wrap).onclick = () => show('home');
@@ -1396,11 +1540,26 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       for (let i = 0; i < SetupState.count; i++) {
         const row = el('div', 'name-row');
         const human = isHot ? true : i === 0;
+        const sel = SetupState.wonders[i];
         row.innerHTML = `<span class="seat-tag ${human ? 'you' : 'bot'}">${human ? (isHot ? 'P' + (i + 1) : 'You') : 'AI'}</span>
-          <input type="text" value="${SetupState.names[i]}" data-i="${i}" ${human ? '' : ''}>`;
+          <input type="text" value="${SetupState.names[i]}" data-i="${i}">
+          <span class="row-wonder">
+            <span class="rw-emblem">${sel ? wonderEmblem(sel, 32) : placeholderEmblem(32)}</span>
+            <select class="wsel" data-i="${i}" title="Choose this player's wonder">
+              <option value="">Random</option>
+              ${SW.WONDERS.map(w => `<option value="${w.short}" ${sel === w.short ? 'selected' : ''}>${w.short}</option>`).join('')}
+            </select>
+          </span>`;
         nm.appendChild(row);
       }
       $$('#names input', wrap).forEach(inp => inp.oninput = () => { SetupState.names[inp.dataset.i] = inp.value; });
+      $$('#names .wsel', wrap).forEach(s => s.onchange = () => {
+        const i = +s.dataset.i, val = s.value || null;
+        // keep wonders unique: if another seat already holds this one, free it
+        if (val) SetupState.wonders.forEach((w, j) => { if (j !== i && w === val) SetupState.wonders[j] = null; });
+        SetupState.wonders[i] = val;
+        drawNames();
+      });
     };
     drawNames();
     $$('.stepper button', wrap).forEach(b => b.onclick = () => {
@@ -1417,7 +1576,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     for (let i = 0; i < SetupState.count; i++) {
       seats.push({ id: 'p' + i, name: SetupState.names[i] || ('Player ' + (i + 1)), bot: isHot ? false : i !== 0 });
     }
-    App.g = G.newGame({ seats, useLeaders: SetupState.leaders });
+    App.g = G.newGame({ seats, useLeaders: SetupState.leaders, wonders: SetupState.wonders.slice(0, SetupState.count) });
     App.viewSeat = 0;
     if (isHot) { App.mode = 'hotseat'; beginHotseatTurn(); }
     else { App.mode = 'bots'; show('game'); }
@@ -1471,6 +1630,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     const canAct = canViewerAct();
     const handTitle = g.phase === 'leaderDraft' ? 'Choose a leader' : (committed ? 'Move locked — waiting…' : 'Your hand — choose a card');
     handWrap.appendChild(el('div', 'hand-title', handTitle));
+    if (g.phase === 'leaderDraft') handWrap.appendChild(el('div', 'leader-note', 'Leaders are characters you keep for the whole game. Pick one now — you’ll pay coins to recruit it during the ages — and it grants a permanent bonus (extra shields, a science symbol, coins, or victory points). Tap any card to see what it does.'));
     handWrap.appendChild(handRow(me, canAct && !committed));
     wrap.appendChild(handWrap);
 
@@ -1553,8 +1713,10 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         </div>`;
     }).join('');
     w.innerHTML = `
-      <div class="wonder-name">${escapeHtml(p.wonder.name)}</div>
-      <div class="wonder-sub">starts with ${resChip(p.wonder.start)} · ${p.leaders && p.leaders.length ? 'leaders: ' + p.leaders.map(l => l.name).join(', ') : 'no leader'}</div>
+      <div class="wonder-head">${wonderEmblem(p.wonder.short, 44)}
+        <div><div class="wonder-name">${escapeHtml(p.wonder.name)}</div>
+        <div class="wonder-sub">starts with ${resChip(p.wonder.start)} · ${p.leaders && p.leaders.length ? 'leaders: ' + p.leaders.map(l => l.name).join(', ') : 'no leader'}</div></div>
+      </div>
       <div class="stages">${stages}</div>`;
     return w;
   }
@@ -1570,7 +1732,8 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         const card = el('div', 'tcard c-' + col);
         card.style.top = (i * 22) + 'px';
         card.innerHTML = `<span class="tc-name">${escapeHtml(c.name)}</span><span class="tc-eff">${effectHTML(c)}</span>`;
-        card.title = c.name;
+        card.title = c.name + ' — tap for details';
+        card.onclick = () => openCardInfo(c);
         colDiv.appendChild(card);
       });
       colDiv.style.height = (cards.length * 22 + 40) + 'px';
@@ -1595,14 +1758,14 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       const canBuild = (byUid[card.uid] || []).some(m => m.type === 'build');
       const canWonder = (byUid[card.uid] || []).some(m => m.type === 'wonder');
       cd.innerHTML = `
-        <div class="hc-head"><span class="hc-name">${escapeHtml(card.name)}</span></div>
+        <div class="hc-head">${cardEmblem(card, 34)}<span class="hc-name">${escapeHtml(card.name)}</span></div>
         <div class="hc-cost">${card.cost && (card.cost.coins || Object.values(card.cost.res || {}).some(Boolean)) ? costHTML(card) : (card.leader ? '<span class="coin">' + (card.cost.coins || 0) + '</span>' : '<span class="free">free</span>')}</div>
         <div class="hc-eff">${card.leader ? escapeHtml(card.desc || '') : effectHTML(card)}</div>
         ${card.chainFrom ? `<div class="hc-chain">links from ${card.chainFrom.join('/')}</div>` : ''}
-        ${interactive ? `<div class="hc-flags">${canBuild ? '<i class="ok">build</i>' : '<i class="no">can\'t build</i>'}${canWonder ? '<i class="ok">wonder</i>' : ''}</div>` : ''}
+        ${interactive ? `<div class="hc-flags">${canBuild ? '<i class="ok">build</i>' : '<i class="no">can\'t build</i>'}${canWonder ? '<i class="ok">wonder</i>' : ''}<i class="info">details ›</i></div>` : `<div class="hc-flags"><i class="info">tap for details ›</i></div>`}
       `;
       if (interactive) cd.onclick = () => openActions(card, byUid[card.uid] || []);
-      else cd.classList.add('static');
+      else { cd.classList.add('static'); cd.onclick = () => openCardInfo(card); }
       row.appendChild(cd);
     });
     return row;
@@ -1635,9 +1798,13 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       const discard = moves.find(m => m.type === 'discard');
       if (discard) acts.push({ label: 'Discard for 3 coins', sub: 'Sell the card to the bank.', m: discard, kind: 'discard' });
     }
-    sheet.innerHTML = `<div class="sheet-card c-${card.color}">
-        <div class="sc-name">${escapeHtml(card.name)}</div>
-        <div class="sc-eff">${card.leader ? escapeHtml(card.desc || '') : effectHTML(card)}</div>
+    sheet.innerHTML = `<div class="sheet-card c-${card.leader ? 'leader' : card.color}">
+        <div class="sc-emblem">${cardEmblem(card, 52)}</div>
+        <div class="sc-body">
+          <div class="sc-label">${card.leader ? 'Leader' : (COLOR_LABEL[card.color] || '')}</div>
+          <div class="sc-name">${escapeHtml(card.name)}</div>
+          <div class="sc-desc">${escapeHtml(describe(card))}</div>
+        </div>
       </div>`;
     const list = el('div', 'sheet-acts');
     acts.forEach(a => {
@@ -1652,6 +1819,29 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
   }
   function closePanel() { const h = $('#panelhost'); if (h) { h.innerHTML = ''; h.classList.remove('open'); } }
+
+  // ===== read-only card detail (for new players to learn what a card does) =====
+  function openCardInfo(card) {
+    const host = $('#panelhost'); if (!host) return;
+    const sheet = el('div', 'sheet');
+    const label = card.leader ? 'Leader' : (COLOR_LABEL[card.color] || '');
+    const costHtml = card.leader
+      ? '<span class="coin">' + (card.cost && card.cost.coins || 0) + '</span> <span class="ci-costnote">to recruit</span>'
+      : (card.cost && (card.cost.coins || Object.values(card.cost.res || {}).some(Boolean)) ? costHTML(card) : '<span class="free">free to build</span>');
+    sheet.innerHTML = `
+      <div class="card-info c-${card.leader ? 'leader' : card.color}">
+        <div class="ci-emblem">${cardEmblem(card, 76)}</div>
+        <div class="ci-main">
+          <div class="ci-label">${label}${card.age ? ' · Age ' + ['', 'I', 'II', 'III'][card.age] : ''}</div>
+          <div class="ci-name">${escapeHtml(card.name)}</div>
+        </div>
+      </div>
+      <div class="ci-costline"><span>Cost</span><div class="ci-cost">${costHtml}</div></div>
+      <div class="ci-desc">${escapeHtml(describe(card))}</div>`;
+    const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
+    const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
+    host.innerHTML = ''; host.appendChild(back); host.appendChild(sheet); host.classList.add('open');
+  }
 
   // ===== commit + advance =====
   function doCommit(move) {
@@ -1759,6 +1949,8 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         <p><b>Colors:</b> blue = victory points, green = science (sets of three + squares of each symbol), red = military shields, yellow = commerce/coins, purple = guild bonuses (Age III).</p>
         <p><b>Military</b> is compared with both neighbors at the end of each age: win for +1/+3/+5, lose for −1.</p>
         <p><b>Chains:</b> some cards let you build a later card for free if you own the linked one.</p>
+        <p><b>Leaders (expansion):</b> if enabled, before the ages begin you draft characters — Caesar, Archimedes, Midas and others. A recruited leader stays in your city all game and grants a standing bonus: shields, a science symbol, coins, or victory points.</p>
+        <p><b>Learn any card:</b> tap a card in your hand, or any building already in a city, to see an illustrated summary of exactly what it does.</p>
         <p>Highest total score after Age III wins. Ties broken by coins.</p>
       </div>`;
     const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
@@ -1796,8 +1988,6 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   // ============================================================
   // ONLINE MULTIPLAYER (shared persistent storage)
   // ============================================================
-  // Storage layer: uses Claude's window.storage when present (inside Claude),
-  // otherwise talks to the /api/store serverless endpoint (Vercel + Upstash Redis).
   const NATIVE = (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function');
   const API = '/api/store';
   const Store = {
@@ -1819,7 +2009,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   };
   function hasStorage() {
     if (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function') return true;
-    return location.protocol === 'http:' || location.protocol === 'https:'; // served -> API available
+    return location.protocol === 'http:' || location.protocol === 'https:';
   }
   function code4() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 4; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
   function myId() { if (!App._id) App._id = 'u' + Math.random().toString(36).slice(2, 8); return App._id; }
@@ -1898,7 +2088,15 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       <div class="eyebrow">Room</div>
       <div class="roomcode">${room.code}</div>
       <div class="lobby-sub">${isHost ? 'You are the host. Start when everyone’s in.' : 'Waiting for the host to start…'}</div>
-      <div class="seats">${room.seats.map((s, i) => `<div class="seat-chip ${s.id === myId() ? 'me' : ''}">${escapeHtml(s.name)}${s.id === room.host ? ' ♛' : ''}</div>`).join('')}</div>
+      <div class="seats">${room.seats.map((s, i) => `<div class="seat-chip ${s.id === myId() ? 'me' : ''}">${escapeHtml(s.name)}${s.wonder ? ' · ' + s.wonder : ''}${s.id === room.host ? ' ♛' : ''}</div>`).join('')}</div>
+      <label class="field"><span>Your wonder</span>
+        <span class="row-wonder">
+          <span class="rw-emblem" id="mywemblem"></span>
+          <select class="wsel" id="mywonder">
+            <option value="">Random</option>
+            ${SW.WONDERS.map(w => `<option value="${w.short}">${w.short}</option>`).join('')}
+          </select>
+        </span></label>
       ${isHost ? `
         <label class="toggle"><input type="checkbox" id="lobleaders" ${room.leaders ? 'checked' : ''}><span>Leaders expansion</span></label>
         <label class="field"><span>Fill empty seats with bots up to</span>
@@ -1906,6 +2104,20 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         <button class="primary" id="startroom">Start game</button>` : `<div class="dot-wait"><span class="dot"></span> live</div>`}
     `;
     $('.back', wrap).onclick = async () => { stopPolling(); show('home'); };
+    // per-player wonder choice (everyone)
+    const meIdx = room.seats.findIndex(s => s.id === myId());
+    const myW = meIdx >= 0 ? room.seats[meIdx].wonder : null;
+    const mySel = $('#mywonder', wrap); if (mySel && myW) mySel.value = myW;
+    const myEmblemHost = $('#mywemblem', wrap); if (myEmblemHost) myEmblemHost.innerHTML = myW ? wonderEmblem(myW, 32) : placeholderEmblem(32);
+    if (mySel) mySel.onchange = async () => {
+      const val = mySel.value || null;
+      const r2 = App.room; const idx = r2.seats.findIndex(s => s.id === myId());
+      if (idx < 0) return;
+      if (val) r2.seats.forEach((s, j) => { if (j !== idx && s.wonder === val) s.wonder = null; });
+      r2.seats[idx].wonder = val; r2.updated = Date.now();
+      await Store.set('room_' + r2.code, r2);
+      render();
+    };
     if (isHost) {
       $('#lobleaders', wrap).onchange = async e => { App.room.leaders = e.target.checked; await Store.set('room_' + room.code, App.room); };
       $$('.stepper button', wrap).forEach(b => b.onclick = async () => {
@@ -1923,7 +2135,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     let bi = seats.length + 1;
     while (seats.length < room.maxBotsTo) seats.push({ id: 'bot' + bi, name: 'Bot ' + bi, bot: true }), bi++;
     if (seats.length < 3) { while (seats.length < 3) seats.push({ id: 'bot' + bi, name: 'Bot ' + bi, bot: true }), bi++; }
-    const g = G.newGame({ seats, useLeaders: room.leaders });
+    const g = G.newGame({ seats, useLeaders: room.leaders, wonders: seats.map(s => s.wonder || null) });
     room.started = true; room.seatOrder = seats.map(s => ({ id: s.id, name: s.name, bot: s.bot }));
     room.updated = Date.now();
     await Store.set('room_' + room.code, room);
