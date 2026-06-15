@@ -171,6 +171,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .nb-tag{font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:var(--bronze);
   border:1px solid var(--bronze); border-radius:99px; padding:1px 6px; flex:none}
+.nb-tag.left-tag{color:var(--bad); border-color:var(--bad)}
 .city-wonder{font-size:12px; color:var(--ink-dim); display:flex; align-items:center; gap:6px}
 .wpips{display:inline-flex; gap:3px}
 .wpips i{width:8px; height:8px; border-radius:2px; background:var(--line2);
@@ -402,6 +403,44 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 .guide .rules h4:first-child{border-top:none; padding-top:0; margin-top:2px}
 .guide .rules p .cdot{vertical-align:middle; margin-right:4px}
 .guide .rules p .emblem{vertical-align:middle; display:inline-block; margin:0 1px}
+/* per-wonder powers in the guide */
+.guide-wonders{display:flex; flex-direction:column; gap:8px; margin:10px 0 4px}
+.gw-row{display:flex; gap:11px; align-items:flex-start; padding:9px 11px; border:1px solid var(--line2);
+  border-radius:var(--r-sm); background:rgba(0,0,0,.16)}
+.gw-emblem{flex:none}
+.gw-body{flex:1; min-width:0}
+.gw-name{font-family:var(--disp); font-size:14px; font-weight:600; color:var(--ink)}
+.gw-start{font-family:var(--body); font-size:11px; color:var(--ink-faint); font-style:italic; margin-left:4px}
+.gw-stages{font-size:12px; color:var(--gold); margin:2px 0 3px; letter-spacing:.02em}
+.gw-note{font-size:12.5px; color:var(--ink-dim); line-height:1.45}
+/* leaders reference in the guide */
+.guide-leaders{display:flex; flex-direction:column; gap:14px; margin:10px 0 4px}
+.lg-group{display:flex; flex-direction:column; gap:6px}
+.lg-title{font-family:var(--disp); font-size:12px; letter-spacing:.06em; color:var(--gold-bright);
+  text-transform:uppercase; padding-bottom:3px; border-bottom:1px solid var(--line)}
+.lg-row{display:flex; gap:10px; align-items:center; padding:6px 8px; border-radius:var(--r-sm); background:rgba(0,0,0,.14)}
+.lg-emblem{flex:none}
+.lg-body{flex:1; min-width:0}
+.lg-name{font-family:var(--disp); font-size:13.5px; font-weight:600; color:var(--ink)}
+.lg-cost{font-family:var(--body); font-size:11px; color:var(--gold); font-style:italic; margin-left:5px}
+.lg-desc{font-size:12px; color:var(--ink-dim); line-height:1.4; margin-top:1px}
+/* science "shapes collected" tracker on your own board */
+.sci-track{margin-top:12px; border-top:1px solid var(--line); padding-top:10px}
+.sci-track-head{font-family:var(--disp); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--gold); margin-bottom:7px}
+.sci-track-head b{color:var(--gold-bright)}
+.sci-track-row{display:flex; flex-wrap:wrap; gap:8px}
+.sci-chip{display:flex; align-items:center; gap:7px; padding:5px 9px 5px 5px; border-radius:99px;
+  border:1px solid var(--line2); background:rgba(0,0,0,.2)}
+.sci-chip.have{border-color:var(--c-green); background:rgba(46,139,87,.14)}
+.sci-chip.wild.have{border-color:var(--gold); background:rgba(207,164,80,.14)}
+.sci-chip.miss{opacity:.4}
+.sci-chip .emblem{border-radius:7px}
+.sci-meta{display:flex; flex-direction:column; line-height:1.05}
+.sci-lab{font-family:var(--disp); font-size:11px; color:var(--ink)}
+.sci-n{font-size:11px; color:var(--ink-dim)}
+.sci-chip.have .sci-n{color:var(--gold-bright); font-weight:600}
+.sci-hint{font-size:11px; color:var(--ink-faint); font-style:italic; margin-top:7px}
 
 /* ---------------- RESPONSIVE ---------------- */
 @media(max-width:680px){
@@ -630,7 +669,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     { name: 'Croesus', leader: true, cost: cost(0), effect: { coins: 6 }, desc: 'Gain 6 coins now.' },
     { name: 'Plato', leader: true, cost: cost(4), effect: { vpScienceSet: 7 }, desc: '+7 VP per complete science set (extra).' },
     { name: 'Aristotle', leader: true, cost: cost(3), effect: { vpScienceSet: 3 }, desc: '+3 VP per science set.' },
-    { name: 'Pericles', leader: true, cost: cost(6), effect: { vp: 2, vpPerColor: { color: 'red', scope: 'self', vp: 0 } }, desc: '2 VP; encourages military builds.' },
+    { name: 'Pericles', leader: true, cost: cost(6), effect: { vp: 2, vpPerColor: { color: 'red', scope: 'self', vp: 1 } }, desc: 'Worth 2 VP, plus 1 VP for each red (military) card in your city.' },
     { name: 'Pythagoras', leader: true, cost: cost(2), effect: { scienceWild: true }, desc: 'Counts as any one science symbol.' },
     { name: 'Leonidas', leader: true, cost: cost(2), effect: { shields: 1 }, desc: 'Provides 1 shield, cheaply.' },
     { name: 'Nefertiti', leader: true, cost: cost(3), effect: { vp: 4 }, desc: '4 VP.' },
@@ -934,6 +973,11 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       if (e.vpPerStage && (e.vpPerStage.scope === 'self')) b.leaders += (player.stagesBuilt || []).length * e.vpPerStage.vp;
       if (e.vpPerCoins) b.leaders += Math.floor((player.coins || 0) / e.vpPerCoins);
       if (e.vpScienceSet) { const { sym, wild } = scienceSymbols(player); const sets = Math.min(sym.compass, sym.gear, sym.tablet); b.leaders += sets * e.vpScienceSet; }
+      if (e.vpPerColor && e.vpPerColor.vp) {
+        const cols = Array.isArray(e.vpPerColor.color) ? e.vpPerColor.color : [e.vpPerColor.color];
+        const cnt = (player.built || []).filter(c => cols.includes(c.color)).length;
+        b.leaders += cnt * e.vpPerColor.vp;
+      }
     });
     b.total = b.military + b.coins + b.wonder + b.civilian + b.commercial + b.guild + b.science + b.leaders;
     return b;
@@ -1705,6 +1749,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     c.innerHTML = `
       <div class="city-head">
         <span class="city-name">${escapeHtml(p.name)}</span>
+        ${p.disconnected ? '<span class="nb-tag left-tag">left</span>' : ''}
         ${rel ? `<span class="nb-tag">${rel}</span>` : ''}
       </div>
       <div class="city-wonder">${escapeHtml(p.wonder.short)} <span class="wpips">${p.wonder.stages.map((s, i) => `<i class="${i < p.stagesBuilt.length ? 'f' : ''}"></i>`).join('')}</span></div>
@@ -1748,8 +1793,29 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         <div><div class="wonder-name">${escapeHtml(p.wonder.name)}</div>
         <div class="wonder-sub">starts with ${resChip(p.wonder.start)} · ${p.leaders && p.leaders.length ? 'leaders: ' + p.leaders.map(l => l.name).join(', ') : 'no leader'}</div></div>
       </div>
-      <div class="stages">${stages}</div>`;
+      <div class="stages">${stages}</div>
+      ${mineFlag ? scienceTrackerHTML(p) : ''}`;
     return w;
+  }
+
+  // shows which science shapes the player has collected so far
+  function scienceTrackerHTML(p) {
+    const { sym, wild } = SW.scienceSymbols(p);
+    const pts = SW.scienceScore(p);
+    const chip = (key) => {
+      const label = SCI[key][1]; const n = sym[key];
+      return `<span class="sci-chip ${n ? 'have' : 'miss'}" title="${label}: ${n} collected">
+        ${emblemSVG('sci-' + key, EMBLEM_BG.green, 26)}
+        <span class="sci-meta"><span class="sci-lab">${label}</span><span class="sci-n">×${n}</span></span></span>`;
+    };
+    const wildChip = wild ? `<span class="sci-chip have wild" title="Wild symbol: counts as any shape">
+        ${emblemSVG('star', EMBLEM_BG.leader, 26)}
+        <span class="sci-meta"><span class="sci-lab">Wild</span><span class="sci-n">×${wild}</span></span></span>` : '';
+    return `<div class="sci-track">
+      <div class="sci-track-head">Science collected${pts ? ` · <b>${pts} pts</b>` : ''}</div>
+      <div class="sci-track-row">${chip('compass')}${chip('gear')}${chip('tablet')}${wildChip}</div>
+      <div class="sci-hint">Score the square of each shape, +7 for every set of all three.</div>
+    </div>`;
   }
 
   function tableau(p, mineFlag) {
@@ -1979,6 +2045,48 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     const host = $('#panelhost'); if (!host) return;
     const sheet = el('div', 'sheet wide guide');
     const sci = (g) => emblemSVG('sci-' + g, EMBLEM_BG.green, 22);
+    const stageReward = (e) => e.vp ? `${e.vp} pts`
+      : e.shields ? `${e.shields} shield${e.shields > 1 ? 's' : ''}`
+      : e.coins ? `+${e.coins} coins`
+      : e.scienceWild ? 'wild science'
+      : e.produceChoice ? 'any raw material'
+      : e.freeBuildPerAge ? '1 free build / age' : '—';
+    const WSTRAT = {
+      Rhodes: 'Cheap and aggressive — the free shields help win battles without spending red cards.',
+      Alexandria: 'The flexible builder — its wild raw material covers whatever resource you’re missing.',
+      Ephesus: 'The merchant — a 9-coin surge to buy from neighbors and recruit leaders.',
+      Babylon: 'The scholar — its wild science symbol completes sets; lean into green cards.',
+      Olympia: 'The opportunist — build a costly card (or deny a rival) for free, once per age.',
+      Halicarnassus: 'Pure points — 12 VP from the wonder alone, no special upkeep.',
+      Giza: 'The monument — 15 VP, the most of any wonder; rewards steadily building up.',
+    };
+    const wonderRows = SW.WONDERS.map(w => `
+      <div class="gw-row">
+        <div class="gw-emblem">${wonderEmblem(w.short, 40)}</div>
+        <div class="gw-body">
+          <div class="gw-name">${escapeHtml(w.short)} <span class="gw-start">starts: ${RES_NAME[w.start]}</span></div>
+          <div class="gw-stages">${w.stages.map(s => stageReward(s.effect)).join(' &nbsp;·&nbsp; ')}</div>
+          <div class="gw-note">${WSTRAT[w.short] || ''}</div>
+        </div>
+      </div>`).join('');
+    const LGROUPS = [
+      ['Military — shields win battles', ['Caesar', 'Hannibal', 'Leonidas', 'Pericles']],
+      ['Science — symbols & sets', ['Archimedes', 'Hammurabi', 'Pythagoras', 'Euclid', 'Aristotle', 'Plato']],
+      ['Economy & tempo — coins, discounts, free builds', ['Croesus', 'Midas', 'Vitruvius', 'Imhotep', 'Solomon']],
+      ['Victory points', ['Nefertiti', 'Amytis', 'Phidias']],
+    ];
+    const byLeader = {}; SW.LEADERS.forEach(l => byLeader[l.name] = l);
+    const leaderGroupsHTML = LGROUPS.map(([title, names]) => `
+      <div class="lg-group"><div class="lg-title">${title}</div>
+        ${names.map(n => { const l = byLeader[n]; if (!l) return ''; return `
+          <div class="lg-row">
+            <div class="lg-emblem">${cardEmblem(l, 34)}</div>
+            <div class="lg-body">
+              <div class="lg-name">${escapeHtml(l.name)} <span class="lg-cost">${l.cost && l.cost.coins ? l.cost.coins + ' coins' : 'free'}</span></div>
+              <div class="lg-desc">${escapeHtml(l.desc)}</div>
+            </div>
+          </div>`; }).join('')}
+      </div>`).join('');
     sheet.innerHTML = `<div class="sheet-title">How to play Seven Wonders</div>
       <div class="rules">
         <h4>The goal</h4>
@@ -2015,10 +2123,14 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         <p>So spreading across all three is usually stronger than piling into one. A few cards and leaders give a "wild" symbol that counts as whichever helps most.</p>
 
         <h4>Wonders</h4>
-        <p>Your Wonder (your "nation") gives a free resource each turn and has three stages you build by burying cards. Stages give big points and unique powers — extra coins, a free build each age, a wild science symbol, and so on. You can pick your Wonder at the start, or leave it random.</p>
+        <p>Your Wonder (your "nation") gives a free resource each turn and has three stages you build by burying cards. Stages give big points and unique powers. You can pick your Wonder at the start, or leave it random — here's what each one does, so you can plan:</p>
+        <div class="guide-wonders">${wonderRows}</div>
+        <p>Stages are read left to right; all three give victory points except where a special power is listed. Picking a wonder whose power matches your plan (military, science, economy, flexibility, or raw points) is the heart of early strategy.</p>
 
         <h4>Leaders (optional expansion)</h4>
-        <p>If enabled, before the ages you draft famous characters (Caesar, Archimedes, Midas…). You'll pay coins to recruit one onto the table during the ages, and it grants a permanent bonus — shields, a science symbol, coins, or victory points. Tap any leader to see exactly what it does.</p>
+        <p>If enabled, you draft leader cards before the ages, then pay coins to bring one into play during the game (the recruit cost is shown on each). A leader stays in your city all game and grants a standing bonus. Plan around your wonder — science leaders shine with Babylon, military leaders with Rhodes, and so on:</p>
+        <div class="guide-leaders">${leaderGroupsHTML}</div>
+        <p>You don't have to recruit every leader you draft — only pay for the ones that fit your plan. Tap any leader in-game to see exactly what it does.</p>
 
         <h4>Learn any card as you play</h4>
         <p>Tap a card in your hand (or the <b>ⓘ Details</b> button on it), or tap any building already in a city, to see an illustrated explanation of what it does. Nothing is hidden — explore freely.</p>
@@ -2169,6 +2281,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
   function startLobbyPoll() {
     stopPolling();
     lobbyTimer = setInterval(async () => {
+      await heartbeat();
       const room = await Store.get('room_' + App.online.code);
       if (!room) return;
       if (App.online.isHost) {
@@ -2263,6 +2376,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     while (seats.length < room.maxBotsTo) seats.push({ id: 'bot' + bi, name: 'Bot ' + bi, bot: true }), bi++;
     if (seats.length < 3) { while (seats.length < 3) seats.push({ id: 'bot' + bi, name: 'Bot ' + bi, bot: true }), bi++; }
     const g = G.newGame({ seats, useLeaders: room.leaders, wonders: seats.map(s => s.wonder || null) });
+    g.version = 1; g.startedAt = Date.now();
     room.started = true; room.seatOrder = seats.map(s => ({ id: s.id, name: s.name, bot: s.bot }));
     room.updated = Date.now();
     await Store.set('room_' + room.code, room);
@@ -2283,26 +2397,48 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     startGamePoll();
   }
 
+  const HB_STALE = 30000; // a player silent this long is treated as having left
+
   function startGamePoll() {
     stopPolling();
     gameTimer = setInterval(onlineTick, 2200);
     onlineTick();
   }
+  async function heartbeat() { if (App.online) await Store.set('hb_' + App.online.code + '_' + myId(), Date.now()); }
+
+  // who should run turn resolution right now — fails over to the lowest-seat alive human if the host goes silent
+  async function actingHostId(code, g) {
+    const designated = (App.room && App.room.host) || null;
+    const now = Date.now();
+    if (designated === myId()) return myId();
+    if (designated) {
+      const hb = await Store.get('hb_' + code + '_' + designated);
+      if (hb && (now - hb) < HB_STALE) return designated;
+    }
+    for (const p of g.players) {
+      if (p.bot) continue;
+      if (p.id === myId()) return myId();
+      const hb = await Store.get('hb_' + code + '_' + p.id);
+      if (hb && (now - hb) < HB_STALE) return p.id;
+    }
+    return myId();
+  }
 
   async function onlineTick() {
     if (!App.online) return;
     const code = App.online.code;
-    // 1) refresh game state
+    await heartbeat(); // "I'm still here"
     const remote = await Store.get('game_' + code);
-    if (remote && (!App.g || remote.version >= App.g.version)) {
-      const myPending = App.g && App.g.players[App.online.seat] ? App.g.players[App.online.seat].pendingMove : null;
+    if (remote && (!App.g || (remote.version || 0) >= (App.g.version || 0))) {
       App.g = remote;
-      // preserve our own pending visual if newer turn hasn't resolved
+      App.online.seat = App.g.players.findIndex(p => p.id === myId());
       if (App.screen === 'game' && !closedPanelOpen()) render();
     }
     if (App.g && App.g.phase === 'finished') { stopPolling(); show('score'); return; }
-    // 2) if host, gather moves and resolve
-    if (App.online.isHost && App.g) await hostResolveIfReady();
+    if (App.g) {
+      const acting = await actingHostId(code, App.g);
+      if (acting === myId()) await hostResolveIfReady();
+    }
   }
   function closedPanelOpen() { const h = $('#panelhost'); return h && h.classList.contains('open'); }
 
@@ -2323,30 +2459,48 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     if (hostBusy) return; hostBusy = true;
     try {
       const code = App.online.code;
-      let g = await Store.get('game_' + code); if (!g) { return; }
+      let g = await Store.get('game_' + code); if (!g) return;
+      const now = Date.now();
       const tk = turnKey(g);
-      // collect human moves
+      const graceOver = (now - (g.startedAt || 0)) > HB_STALE; // never drop players in the opening moments
+      let dirty = false;
+
+      // a player who dropped earlier but is active again resumes control of their city
+      for (const p of g.players) {
+        if (p.disconnected) {
+          const hb = await Store.get('hb_' + code + '_' + p.id);
+          if (hb && (now - hb) < HB_STALE) { p.bot = false; p.disconnected = false; dirty = true; }
+        }
+      }
+
       const humans = g.players.map((p, i) => ({ p, i })).filter(x => !x.p.bot);
       let allIn = true;
       for (const h of humans) {
         if (h.p.pendingMove) continue;
         const mv = await Store.get('move_' + code + '_' + h.i);
-        if (mv && mv.turnId === tk) { g.players[h.i].pendingMove = mv.move; }
-        else allIn = false;
+        if (mv && mv.turnId === tk) { g.players[h.i].pendingMove = mv.move; dirty = true; continue; }
+        // no move submitted — are they still connected?
+        const hb = await Store.get('hb_' + code + '_' + h.p.id);
+        if (graceOver && (!hb || (now - hb) >= HB_STALE)) {
+          g.players[h.i].bot = true; g.players[h.i].disconnected = true; dirty = true; // hand the seat to the AI so play continues
+        } else {
+          allIn = false;
+        }
       }
-      // bots
+
       G.autoCommitBots(g);
       if (allIn && G.allCommitted(g)) {
         G.resolveTurn(g);
-        // clear move keys for next turn
         for (const h of humans) { await Store.del('move_' + code + '_' + h.i); }
+        g.version = (g.version || 0) + 1;
         await Store.set('game_' + code, g);
         App.g = g;
         App.online.seat = g.players.findIndex(p => p.id === myId());
         if (App.screen === 'game' && !closedPanelOpen()) render();
         if (g.phase === 'finished') { stopPolling(); show('score'); }
-      } else {
-        // persist partial pending (so others see who's locked)
+      } else if (dirty) {
+        // record progress (who's locked, who left) so everyone sees it
+        g.version = (g.version || 0) + 1;
         await Store.set('game_' + code, g);
         App.g = g;
         if (App.screen === 'game' && !closedPanelOpen()) render();
