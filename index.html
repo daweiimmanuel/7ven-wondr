@@ -1558,6 +1558,8 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 
   function render() {
     const r = rootEl();
+    const oldHand = r.querySelector ? r.querySelector('.hand') : null; // preserve hand scroll across re-renders
+    App._handScrollPrev = oldHand ? oldHand.scrollLeft : 0;
     if (App._lastScreen !== App.screen) { closePanel(); App._lastScreen = App.screen; }
     r.innerHTML = '';
     if (App.screen === 'home') return renderHome(r);
@@ -1733,9 +1735,14 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     }
 
     r.appendChild(wrap);
-    // always show the leftmost card first when the hand (re)renders
-    if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(() => { const h = $('.hand'); if (h) h.scrollLeft = 0; });
-    else { const h = $('.hand'); if (h) h.scrollLeft = 0; }
+    // On a NEW hand (new turn/cards) jump to the leftmost card; on a same-turn re-render (e.g. a poll
+    // update) keep the player's current scroll position so mobile players aren't yanked left repeatedly.
+    const handSig = (me.hand || []).map(c => c.uid).join(',') + '|' + turnKey(g) + '|' + App.viewSeat;
+    const newHand = App._handSig !== handSig;
+    App._handSig = handSig;
+    const targetScroll = newHand ? 0 : (App._handScrollPrev || 0);
+    const applyScroll = () => { const h = $('.hand'); if (h) h.scrollLeft = targetScroll; };
+    if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(applyScroll); else applyScroll();
 
     // detail/action panel host is a persistent element in <body>
 
@@ -2056,7 +2063,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     sheet.appendChild(el('div', 'sheet-title', 'Menu'));
     const acts = el('div', 'sheet-acts');
     const b1 = el('button', 'act', '<span class="act-label">How to play</span><span class="act-sub">Quick rules reference</span>'); b1.onclick = () => { closePanel(); openRules(); };
-    const b2 = el('button', 'act', '<span class="act-label">Leave game</span><span class="act-sub">Return to the main menu</span>'); b2.onclick = () => { closePanel(); stopPolling(); show('home'); };
+    const b2 = el('button', 'act', '<span class="act-label">Leave game</span><span class="act-sub">Return to the main menu</span>'); b2.onclick = () => { closePanel(); stopPolling(); clearSession(); show('home'); };
     acts.appendChild(b1); acts.appendChild(b2); sheet.appendChild(acts);
     const cancel = el('button', 'sheet-cancel', 'Close'); cancel.onclick = closePanel; sheet.appendChild(cancel);
     const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
@@ -2210,7 +2217,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       tb.appendChild(tr);
     });
     tbl.appendChild(tb); wrap.appendChild(tbl);
-    const again = el('button', 'primary', 'Play again'); again.onclick = () => { stopPolling(); show('home'); };
+    const again = el('button', 'primary', 'Play again'); again.onclick = () => { stopPolling(); clearSession(); show('home'); };
     wrap.appendChild(again);
     r.appendChild(wrap);
   }
@@ -2241,8 +2248,28 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     if (typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function') return true;
     return location.protocol === 'http:' || location.protocol === 'https:';
   }
+  // durable local persistence (real browser localStorage; falls back to in-memory if unavailable/sandboxed)
+  const Persist = (() => {
+    let ok = false; const mem = {};
+    try { const k = '__sw_t'; window.localStorage.setItem(k, '1'); window.localStorage.removeItem(k); ok = true; } catch (e) { ok = false; }
+    return {
+      get(k) { try { return ok ? window.localStorage.getItem('sw1_' + k) : (k in mem ? mem[k] : null); } catch (e) { return (k in mem ? mem[k] : null); } },
+      set(k, v) { try { if (ok) window.localStorage.setItem('sw1_' + k, v); else mem[k] = v; } catch (e) { mem[k] = v; } },
+      del(k) { try { if (ok) window.localStorage.removeItem('sw1_' + k); else delete mem[k]; } catch (e) { delete mem[k]; } },
+    };
+  })();
+  function saveSession(code, name) { try { Persist.set('session', JSON.stringify({ code, name })); } catch (e) { } }
+  function clearSession() { Persist.del('session'); }
+  function getSession() { try { return JSON.parse(Persist.get('session') || 'null'); } catch (e) { return null; } }
+
   function code4() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 4; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
-  function myId() { if (!App._id) App._id = 'u' + Math.random().toString(36).slice(2, 8); return App._id; }
+  function myId() {
+    if (!App._id) {
+      App._id = Persist.get('myid');
+      if (!App._id) { App._id = 'u' + Math.random().toString(36).slice(2, 8); Persist.set('myid', App._id); }
+    }
+    return App._id;
+  }
 
   function openOnlineEntry() {
     const r = rootEl(); r.innerHTML = '';
@@ -2253,19 +2280,43 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       $('.back', wrap).onclick = () => show('home');
       r.appendChild(wrap); return;
     }
+    const sess = getSession();
     wrap.innerHTML = `
       <button class="back">← back</button>
       <h2>Online Room</h2>
-      <label class="field"><span>Your name</span><input id="oname" type="text" value="Player" maxlength="14"></label>
-      <button class="primary" id="create">Create a room</button>
+      ${sess && sess.code ? `<button class="primary" id="rejoin">↩ Rejoin room ${sess.code}</button><div class="or">or start fresh</div>` : ''}
+      <label class="field"><span>Your name</span><input id="oname" type="text" value="${sess && sess.name ? escapeHtml(sess.name) : 'Player'}" maxlength="14"></label>
+      <button class="${sess && sess.code ? 'secondary' : 'primary'}" id="create">Create a room</button>
       <div class="or">or join one</div>
       <label class="field"><span>Room code</span><input id="ocode" type="text" placeholder="ABCD" maxlength="4" style="text-transform:uppercase"></label>
       <button class="secondary" id="join">Join room</button>
-      <div class="note">Share the 4-letter code. The room host starts and runs the game; empty seats fill with bots.</div>`;
+      <div class="note">Share the 4-letter code. The room host starts and runs the game; empty seats fill with bots. If you get disconnected, come back here and tap Rejoin.</div>`;
     $('.back', wrap).onclick = () => show('home');
     $('#create', wrap).onclick = () => createRoom($('#oname', wrap).value.trim() || 'Host');
     $('#join', wrap).onclick = () => joinRoom(($('#ocode', wrap).value || '').trim().toUpperCase(), $('#oname', wrap).value.trim() || 'Player');
+    const rejoinBtn = $('#rejoin', wrap);
+    if (rejoinBtn) rejoinBtn.onclick = () => rejoinRoom(sess);
     r.appendChild(wrap);
+  }
+
+  async function rejoinRoom(sess) {
+    if (!sess || !sess.code) { openOnlineEntry(); return; }
+    const room = await Store.get('room_' + sess.code);
+    if (!room) { toast('That room is no longer available.'); clearSession(); openOnlineEntry(); return; }
+    App.online = { code: sess.code, isHost: room.host === myId(), seat: room.seats.findIndex(s => s.id === myId()) };
+    App.room = room;
+    if (room.started) {
+      const g = await Store.get('game_' + sess.code);
+      if (g && g.players.some(p => p.id === myId())) { App.g = g; enterOnlineGame(); return; }
+      // game started but we were never seated — fall through to lobby view (spectate-ish)
+    }
+    if (App.online.seat < 0 && !room.started && room.seats.length < 7) {
+      room.seats.push({ id: myId(), name: sess.name || 'Player', bot: false });
+      room.updated = Date.now(); await Store.set('room_' + sess.code, room);
+      App.online.seat = room.seats.length - 1;
+    }
+    show('lobby');
+    startLobbyPoll();
   }
 
   async function createRoom(name) {
@@ -2275,6 +2326,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     await Store.set('room_' + code, room);
     App.online = { code, isHost: true, seat: 0 };
     App.room = room;
+    saveSession(code, name);
     show('lobby');
     startLobbyPoll();
   }
@@ -2291,6 +2343,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
     }
     App.online = { code, isHost: room.host === myId(), seat: room.seats.findIndex(s => s.id === myId()) };
     App.room = room;
+    saveSession(code, name);
     show('lobby');
     startLobbyPoll();
   }
@@ -2346,13 +2399,19 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
       App.room = room;
       App.online.seat = room.seats.findIndex(s => s.id === myId());
       if (room.started) { clearInterval(lobbyTimer); lobbyTimer = null; enterOnlineGame(); return; }
-      if (App.screen === 'lobby') render();
+      if (App.screen === 'lobby') {
+        // re-render only on a real change, so an open wonder dropdown isn't closed every poll
+        const sig = lobbySig(room);
+        if (sig !== App._lobbySig) { App._lobbySig = sig; render(); }
+      }
     }, 2000);
   }
   function stopPolling() { if (lobbyTimer) { clearInterval(lobbyTimer); lobbyTimer = null; } if (gameTimer) { clearInterval(gameTimer); gameTimer = null; } }
+  function lobbySig(room) { return JSON.stringify(room.seats.map(s => [s.id, s.name, s.wonder, !!s.bot])) + '|' + room.leaders + '|' + room.maxBotsTo; }
 
   function renderLobby(r) {
     const room = App.room;
+    App._lobbySig = lobbySig(room); // keep poll in sync so idle polls don't rebuild (and close) the dropdown
     const wrap = el('div', 'lobby');
     const isHost = App.online.isHost;
     // my current choice (prefer local cache so it doesn't flicker before the host merges)
@@ -2390,7 +2449,7 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
           <div class="stepper"><button data-d="-1">−</button><b id="botto">${room.maxBotsTo}</b><button data-d="1">+</button></div></label>
         <button class="primary" id="startroom">Start game</button>` : `<div class="dot-wait"><span class="dot"></span> live</div>`}
     `;
-    $('.back', wrap).onclick = async () => { stopPolling(); show('home'); };
+    $('.back', wrap).onclick = async () => { stopPolling(); clearSession(); show('home'); };
     const mySel = $('#mywonder', wrap);
     const myEmblemHost = $('#mywemblem', wrap); if (myEmblemHost) myEmblemHost.innerHTML = myW ? wonderEmblem(myW, 32) : placeholderEmblem(32);
     if (mySel) mySel.onchange = async () => {
