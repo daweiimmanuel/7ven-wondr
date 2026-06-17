@@ -424,6 +424,21 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 .lg-name{font-family:var(--disp); font-size:13.5px; font-weight:600; color:var(--ink)}
 .lg-cost{font-family:var(--body); font-size:11px; color:var(--gold); font-style:italic; margin-left:5px}
 .lg-desc{font-size:12px; color:var(--ink-dim); line-height:1.4; margin-top:1px}
+/* full card reference */
+.card-ref{display:flex; flex-direction:column; gap:14px; margin:10px 0 4px}
+.cr-group{display:flex; flex-direction:column; gap:5px}
+.cr-title{display:flex; align-items:center; gap:7px; font-family:var(--disp); font-size:12px; letter-spacing:.06em;
+  color:var(--gold-bright); text-transform:uppercase; padding-bottom:3px; border-bottom:1px solid var(--line)}
+.cr-title .cdot{width:14px; height:14px; min-width:14px; padding:0; color:transparent}
+.cr-row{display:flex; gap:9px; align-items:center; padding:5px 7px; border-radius:var(--r-sm); background:rgba(0,0,0,.13)}
+.cr-emblem{flex:none}
+.cr-body{flex:1; min-width:0}
+.cr-name{font-family:var(--disp); font-size:13px; font-weight:600; color:var(--ink)}
+.cr-age{font-family:var(--body); font-size:10px; color:var(--ink-faint); font-style:italic; margin-left:5px}
+.cr-desc{font-size:11.5px; color:var(--ink-dim); line-height:1.4; margin-top:1px}
+/* opponent's next wonder stage cost */
+.city-next{font-size:11.5px; color:var(--ink-dim); display:flex; align-items:center; gap:4px; flex-wrap:wrap}
+.city-next.done{color:var(--gold)}
 /* science "shapes collected" tracker on your own board */
 .sci-track{margin-top:12px; border-top:1px solid var(--line); padding-top:10px}
 .sci-track-head{font-family:var(--disp); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
@@ -1753,6 +1768,13 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
         ${rel ? `<span class="nb-tag">${rel}</span>` : ''}
       </div>
       <div class="city-wonder">${escapeHtml(p.wonder.short)} <span class="wpips">${p.wonder.stages.map((s, i) => `<i class="${i < p.stagesBuilt.length ? 'f' : ''}"></i>`).join('')}</span></div>
+      ${(() => {
+        const ni = p.stagesBuilt.length;
+        if (ni >= p.wonder.stages.length) return '<div class="city-next done">Wonder complete</div>';
+        const cost = p.wonder.stages[ni].cost;
+        const chips = SW.RES.filter(r => cost[r]).map(r => resChip(r, cost[r])).join('');
+        return `<div class="city-next">next stage: ${chips}</div>`;
+      })()}
       <div class="city-row">
         ${colorDot('brown', counts.brown)}${colorDot('grey', counts.grey)}${colorDot('blue', counts.blue)}${colorDot('yellow', counts.yellow)}${colorDot('green', counts.green)}${colorDot('red', counts.red)}${counts.purple ? colorDot('purple', counts.purple) : ''}
       </div>
@@ -2087,6 +2109,25 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
             </div>
           </div>`; }).join('')}
       </div>`).join('');
+    // full card reference (every building, deduped by name, grouped by colour)
+    const COLOR_ORDER = ['brown', 'grey', 'blue', 'yellow', 'red', 'green', 'purple'];
+    const AGE_ROMAN = ['', 'I', 'II', 'III'];
+    const seenCard = new Set();
+    const uniqueCards = SW.CARDS.filter(c => { if (seenCard.has(c.name)) return false; seenCard.add(c.name); return true; });
+    const cardRefHTML = COLOR_ORDER.map(col => {
+      const cards = uniqueCards.filter(c => c.color === col).sort((a, b) => (a.age - b.age) || a.name.localeCompare(b.name));
+      if (!cards.length) return '';
+      return `<div class="cr-group"><div class="cr-title"><span class="cdot" data-col="${col}">·</span>${COLOR_LABEL[col]}</div>
+        ${cards.map(c => `
+          <div class="cr-row">
+            <div class="cr-emblem">${cardEmblem(c, 30)}</div>
+            <div class="cr-body">
+              <div class="cr-name">${escapeHtml(c.name)} <span class="cr-age">Age ${AGE_ROMAN[c.age] || ''}</span></div>
+              <div class="cr-desc">${escapeHtml(describe(c))}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    }).join('');
     sheet.innerHTML = `<div class="sheet-title">How to play Seven Wonders</div>
       <div class="rules">
         <h4>The goal</h4>
@@ -2137,6 +2178,10 @@ button:focus-visible, input:focus-visible, .mode-btn:focus-visible, .handcard:fo
 
         <h4>Winning</h4>
         <p>After Age III, points are totalled from: military, treasury (1 point per 3 coins), Wonder stages, blue civilian cards, yellow commercial bonuses, science, guilds, and any leaders. Highest total wins; ties go to whoever has more coins.</p>
+
+        <h4>Card reference — every building</h4>
+        <p>Every card in the deck and what it does, grouped by colour (duplicates shown once). Use this to learn what's coming and plan your chains.</p>
+        <div class="card-ref">${cardRefHTML}</div>
       </div>`;
     const cancel = el('button', 'sheet-cancel', 'Got it'); cancel.onclick = closePanel; sheet.appendChild(cancel);
     const back = el('div', 'panel-backdrop'); back.onclick = closePanel;
